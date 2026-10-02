@@ -9,7 +9,9 @@ A Spring Boot MCP server exposing Apply product capabilities as AI agent tools. 
 ## Commands
 
 - Build and test: `./mvnw test`
-- Run: `./mvnw spring-boot:run` (MCP endpoint `http://localhost:8080/mcp`)
+- Run with mock: `./mvnw spring-boot:run` (MCP endpoint `http://localhost:8080/mcp`)
+- Run with real APIs: `SPRING_PROFILES_ACTIVE=real ./mvnw spring-boot:run` (needs `config/application-real.yml` or `PREQUAL_*` env vars)
+- Full handbook: `docs/index.html`. Update it when files, flows or rules change.
 
 ## Architecture
 
@@ -25,6 +27,7 @@ A Spring Boot MCP server exposing Apply product capabilities as AI agent tools. 
 - Never return or log SSN, date of birth, income or address. Log tool name, outcome, correlation id, duration only.
 - Never add automatic retries to accept or any other state-changing call.
 - Keep gateway-specific details (headers, keys, base URLs) in `HttpPrequalBackend` and configuration.
+- The mock/real choice is server configuration (`prequal.backend`), never a tool parameter.
 - No real customer data, real endpoints, or credentials in this repository. Mock data only.
 
 ## Adding a new apply product

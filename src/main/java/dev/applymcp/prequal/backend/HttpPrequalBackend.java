@@ -34,6 +34,10 @@ public class HttpPrequalBackend implements PrequalBackend {
     private final ObjectMapper objectMapper;
 
     public HttpPrequalBackend(PrequalHttpProperties props, RestClient.Builder builder, ObjectMapper objectMapper) {
+        requireSetting(props.baseUrl(), "prequal.http.base-url", "PREQUAL_BASE_URL");
+        requireSetting(props.clientId(), "prequal.http.client-id", "PREQUAL_CLIENT_ID");
+        requireSetting(props.apiKey(), "prequal.http.api-key", "PREQUAL_API_KEY");
+
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout((int) props.connectTimeout().toMillis());
         requestFactory.setReadTimeout((int) props.readTimeout().toMillis());
@@ -47,6 +51,15 @@ public class HttpPrequalBackend implements PrequalBackend {
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .build();
         this.objectMapper = objectMapper;
+        log.warn("Prequal backend: REAL APIs via {} (prequal.backend=http)", props.baseUrl());
+    }
+
+    /** Fail at startup, not on the first tool call, when real mode is selected without its settings. */
+    private static void requireSetting(String value, String property, String envVar) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalStateException("prequal.backend=http but " + property + " is not set. Set environment variable "
+                    + envVar + " or add it to config/application-real.yml. To use the mock instead, set prequal.backend=mock.");
+        }
     }
 
     @Override

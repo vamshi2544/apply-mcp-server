@@ -11,3 +11,4 @@ target/
 # Local secrets
 .env
 application-local.yml
+config/application-real.yml

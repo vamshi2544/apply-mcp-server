@@ -25,12 +25,31 @@ management:
     web:
       exposure:
         include: health,info
+  info:
+    env:
+      enabled: true
 
-# Backend selection: mock (default, in-memory) or http (real APIs through the gateway)
+# Shown at GET /actuator/info so you can always check which backend is live.
+info:
+  prequal:
+    backend: ${prequal.backend}
+
+# ---------------------------------------------------------------------------
+# BACKEND SWITCH
+# prequal.backend decides which PrequalBackend bean is created at startup:
+#   mock -> MockPrequalBackend  (in-memory, no network, default)
+#   http -> HttpPrequalBackend  (real APIs through the gateway)
+# Ways to set it, highest priority first:
+#   1. Command line:     --prequal.backend=http
+#   2. Environment var:  PREQUAL_BACKEND=http
+#   3. Spring profile:   --spring.profiles.active=real   (see application-real.yml)
+#   4. This file:        default below
+# It is server configuration. It is never part of a tool call, so an AI agent cannot change it.
+# ---------------------------------------------------------------------------
 prequal:
-  backend: mock
+  backend: ${PREQUAL_BACKEND:mock}
   http:
-    base-url: ${PREQUAL_BASE_URL:http://localhost:9090}
+    base-url: ${PREQUAL_BASE_URL:}
     client-id: ${PREQUAL_CLIENT_ID:}
     api-key: ${PREQUAL_API_KEY:}
     channel: AI_AGENT

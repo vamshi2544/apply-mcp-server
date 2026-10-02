@@ -1,0 +1,13 @@
+# Local settings for the "real" profile.
+# 1. Copy this file to config/application-real.yml (same folder). That file is gitignored.
+# 2. Fill in the values for your lower environment.
+# 3. Run with the "Apply MCP (real API)" configuration, or --spring.profiles.active=real.
+#
+# Never commit the filled-in file.
+
+prequal:
+  http:
+    base-url: https://your-gateway-host.example.com
+    client-id: your-client-id
+    api-key: your-api-key
+    read-timeout: 10s

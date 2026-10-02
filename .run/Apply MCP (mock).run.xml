@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Apply MCP (mock)" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="dev.applymcp.ApplyMcpServerApplication" />
+    <module name="apply-mcp-server" />
+    <option name="PROGRAM_PARAMETERS" value="--prequal.backend=mock" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

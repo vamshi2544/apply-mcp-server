@@ -1,0 +1,11 @@
+# Profile "real": call the real prequal APIs through the gateway.
+# Activate with --spring.profiles.active=real, SPRING_PROFILES_ACTIVE=real,
+# or the "Apply MCP (real API)" run configuration in IntelliJ.
+#
+# Secrets do NOT go in this file. Put them in either:
+#   - environment variables PREQUAL_BASE_URL, PREQUAL_CLIENT_ID, PREQUAL_API_KEY, or
+#   - ./config/application-real.yml in the project root (gitignored; copy the .example file).
+# Spring Boot loads ./config/application-real.yml automatically and it overrides this file.
+
+prequal:
+  backend: http

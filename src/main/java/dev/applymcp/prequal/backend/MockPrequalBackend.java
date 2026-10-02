@@ -11,6 +11,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -53,6 +54,8 @@ public class MockPrequalBackend implements PrequalBackend {
 
     public MockPrequalBackend(Clock clock) {
         this.clock = clock;
+        LoggerFactory.getLogger(MockPrequalBackend.class)
+                .info("Prequal backend: MOCK (in-memory, no real APIs are called). Set prequal.backend=http for real APIs.");
     }
 
     @Override

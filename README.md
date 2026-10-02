@@ -38,6 +38,8 @@ In IntelliJ: open the folder as a Maven project and run `ApplyMcpServerApplicati
 - `MockPrequalBackendTest`: idempotency and decision rules of the mock.
 - `PrequalToolsTest`: consent and confirmation enforcement, validation, PII not echoed, code translation.
 - `McpEndpointIntegrationTest`: starts the server and talks to it with the official MCP Java client over the real protocol.
+- `HttpPrequalBackendTest`: runs the real HTTP adapter against a local stub server.
+- `BackendSelectionTest`: proves the mock is the default and the `real` profile selects the HTTP backend.
 
 ## Connect GitHub Copilot in IntelliJ
 
@@ -111,16 +113,30 @@ src/main/java/dev/applymcp/
 
 ## Switching to the real APIs
 
-Set `prequal.backend=http` and provide the gateway settings through environment variables:
+The backend is chosen by one server setting, `prequal.backend` (`mock` or `http`). It is read once at startup. It is not part of any tool call, so an AI agent cannot change it.
+
+| Where | Mock | Real API |
+|---|---|---|
+| IntelliJ | Run **Apply MCP (mock)** | Run **Apply MCP (real API)** |
+| Terminal | `./mvnw spring-boot:run` | `SPRING_PROFILES_ACTIVE=real ./mvnw spring-boot:run` |
+| Environment variable | `PREQUAL_BACKEND=mock` | `PREQUAL_BACKEND=http` |
+
+For real mode, provide the gateway settings without committing them:
 
 ```bash
-export PREQUAL_BASE_URL=https://<gateway-host>
-export PREQUAL_CLIENT_ID=<client id>
-export PREQUAL_API_KEY=<api key>
-./mvnw spring-boot:run -Dspring-boot.run.arguments=--prequal.backend=http
+cp config/application-real.yml.example config/application-real.yml   # gitignored
+# fill in base-url, client-id, api-key
 ```
 
-Before doing this, align `PrequalApi` and the header names in `HttpPrequalBackend` with the real API contract. Credentials belong in environment variables or a service binding, never in tool arguments or source control.
+or set `PREQUAL_BASE_URL`, `PREQUAL_CLIENT_ID` and `PREQUAL_API_KEY` as environment variables. If real mode is selected and a setting is missing, the server refuses to start and names the missing setting.
+
+Check which backend is live in the startup log (`Prequal backend: MOCK …` or `Prequal backend: REAL APIs via …`) or at `http://localhost:8080/actuator/info`.
+
+Before the first real call, align `PrequalApi`, the paths and headers in `HttpPrequalBackend`, and the code tables in `PrequalMapper` with the real API contract. The checklist is in [docs/index.html](docs/index.html), section 09.
+
+## Documentation
+
+Open [`docs/index.html`](docs/index.html) in a browser for the full handbook: architecture, every file and why it exists, end-to-end sequence diagram, real wire messages, safety rules, error map, and setup for Mac and a work laptop.
 
 ## Design rules
 
