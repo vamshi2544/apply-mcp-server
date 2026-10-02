@@ -138,6 +138,8 @@ Before the first real call, align `PrequalApi`, the paths and headers in `HttpPr
 
 Open [`docs/index.html`](docs/index.html) in a browser for the full handbook: architecture, every file and why it exists, end-to-end sequence diagram, real wire messages, safety rules, error map, and setup for Mac and a work laptop.
 
+To rebuild this project from scratch with an AI assistant (for example on a work laptop), use the three prompts in [`prompts/`](prompts/README.md).
+
 ## Design rules
 
 - The APIs are not changed. The tool layer translates.
