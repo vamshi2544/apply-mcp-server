@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: apply-mcp-server
+  ai:
+    mcp:
+      server:
+        name: apply-mcp-server
+        version: 0.1.0
+        type: SYNC
+        protocol: STREAMABLE          # Streamable HTTP on a single endpoint
+        streamable-http:
+          mcp-endpoint: /mcp
+        instructions: >
+          Tools for credit card prequalification. The flow is: prequal_get_offers (soft credit inquiry,
+          requires the applicant's explicit consent), then prequal_accept_offer (irreversible, requires the
+          applicant's explicit choice of one offer), then prequal_get_application_status.
+          Follow the nextStep field in every result. Never invent ids, never choose an offer for the applicant,
+          and never ask for a full Social Security number.
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# Backend selection: mock (default, in-memory) or http (real APIs through the gateway)
+prequal:
+  backend: mock
+  http:
+    base-url: ${PREQUAL_BASE_URL:http://localhost:9090}
+    client-id: ${PREQUAL_CLIENT_ID:}
+    api-key: ${PREQUAL_API_KEY:}
+    channel: AI_AGENT
+    connect-timeout: 2s
+    read-timeout: 10s
+
+logging:
+  pattern:
+    level: "%5p [%X{correlationId:-}]"

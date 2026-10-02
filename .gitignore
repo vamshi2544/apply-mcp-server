@@ -1,0 +1,13 @@
+target/
+*.class
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Local secrets
+.env
+application-local.yml
