@@ -12,3 +12,4 @@ target/
 .env
 application-local.yml
 config/application-real.yml
+docs/*.src.html

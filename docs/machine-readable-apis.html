@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Machine-Readable APIs and MCP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: leadership briefing. Sticky contents rail, one reading column, diagrams in framed figures that scroll on their own. */
+:root{
+  --bg:#f6f7f9; --surface:#ffffff; --sunken:#eef1f5; --line:#d6dbe4;
+  --fg:#1d2430; --muted:#5a6475; --accent:#003087; --accent-soft:#e3e9f5;
+  --hi:#ffc500; --hi-ink:#4a3a00; --hi-soft:#fff6d6;
+  --ok:#1f7a4d; --ok-soft:#e2f3ea; --warn:#9a5b00; --warn-soft:#fdf0dc; --bad:#b3261e; --bad-soft:#fbe5e3;
+  --code-bg:#0f1b33; --code-fg:#dfe6f3; --code-dim:#8fa0bf; --code-key:#ffd75e; --code-str:#9fd8b8;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body)}
+.wrap{max-width:1200px;margin:0 auto;padding-inline:20px;padding-block:32px 80px;display:grid;grid-template-columns:220px minmax(0,1fr);gap:48px}
+@media (max-width:920px){.wrap{grid-template-columns:minmax(0,1fr);gap:24px;padding-inline:16px}}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-size:14px}
+nav.toc .lbl{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:2px;counter-reset:t}
+nav.toc a{display:flex;gap:10px;padding:5px 10px;border-radius:6px;color:var(--muted);text-decoration:none;counter-increment:t}
+nav.toc a::before{content:counter(t,decimal-leading-zero);font:500 12px/1.7 var(--mono);color:var(--line)}
+nav.toc a:hover{background:var(--accent-soft);color:var(--accent)}
+@media (max-width:920px){nav.toc{position:static;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+  nav.toc ol{grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}}
+main{min-width:0;max-width:820px}
+header{padding-bottom:26px;border-bottom:1px solid var(--line)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font:650 clamp(30px,5vw,44px)/1.1 var(--display);margin:14px 0 12px;text-wrap:balance}
+.lede{font-size:18px;color:var(--muted);max-width:64ch;margin:0}
+section{padding-top:44px;scroll-margin-top:12px}
+h2{font:650 27px/1.2 var(--display);margin:0 0 6px;display:flex;gap:14px;align-items:baseline;text-wrap:balance}
+h2 .n{font:500 14px var(--mono);color:var(--accent)}
+h3{font:600 18px/1.35 var(--body);margin:28px 0 8px}
+p,li{max-width:68ch}
+p{margin:0 0 14px}
+ul,ol{padding-left:22px;margin:0 0 14px}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+.sub{color:var(--muted)}
+code{font:500 .87em var(--mono);background:var(--sunken);border:1px solid var(--line);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+
+.answer{background:var(--hi-soft);border:1px solid color-mix(in srgb,var(--hi) 55%,var(--line));border-left:6px solid var(--hi);border-radius:8px;padding:18px 20px;margin:20px 0 4px}
+.answer .k{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--hi-ink);margin-bottom:8px}
+.answer p{margin:0;font-size:18px;line-height:1.55}
+.callout{border-radius:8px;padding:14px 18px;margin:16px 0;font-size:15px}
+.callout.info{background:var(--accent-soft)} .callout.info b{color:var(--accent)}
+.callout.warn{background:var(--warn-soft)} .callout.warn b{color:var(--warn)}
+.callout p:last-child{margin:0}
+blockquote.say{margin:18px 0;padding:16px 20px;border-left:4px solid var(--accent);background:var(--surface);border-radius:0 8px 8px 0;font:500 17px/1.6 var(--display)}
+
+figure{margin:18px 0 22px}
+figure .frame{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px}
+svg text{font-family:var(--body)}
+.b{fill:var(--surface);stroke:var(--line)}
+.b-api{fill:var(--sunken);stroke:var(--muted)}
+.b-spec{fill:var(--hi-soft);stroke:var(--hi)}
+.b-mcp{fill:var(--accent-soft);stroke:var(--accent)}
+.b-bad{fill:var(--bad-soft);stroke:var(--bad)}
+.b-ok{fill:var(--ok-soft);stroke:var(--ok)}
+.t{font-size:13px;font-weight:600;fill:var(--fg)}
+.s{font-size:11px;fill:var(--muted);font-family:var(--mono)}
+.cap{font-size:11px;fill:var(--muted);font-family:var(--mono);letter-spacing:.08em}
+.e{stroke:var(--muted);stroke-width:1.4;fill:none}
+.e-dash{stroke:var(--muted);stroke-width:1.2;fill:none;stroke-dasharray:4 4}
+.ah{fill:var(--muted)}
+.divider{stroke:var(--line);stroke-dasharray:3 5}
+
+.tbl{overflow-x:auto;margin:14px 0 18px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px/1.3 var(--body);color:var(--muted);background:var(--sunken)}
+tr:last-child td{border-bottom:0}
+td.y{color:var(--ok);font-weight:600} td.n{color:var(--bad);font-weight:600} td.m{color:var(--warn);font-weight:600}
+tr.pick td{background:var(--hi-soft)}
+
+.ladder{display:grid;gap:8px;margin:16px 0}
+.rung{display:grid;grid-template-columns:64px minmax(0,1fr);gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.rung .lv{font:600 20px/1 var(--mono);color:var(--muted);padding-top:2px}
+.rung .t1{font-weight:600}
+.rung .d{font-size:14px;color:var(--muted)}
+.rung .tag{display:inline-block;font:500 10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:4px 6px;border-radius:4px;margin-left:6px;vertical-align:2px}
+.tag.need{background:var(--hi);color:#2a2100}
+.tag.typ{background:var(--sunken);color:var(--muted);border:1px solid var(--line)}
+.rung.target{border-color:var(--hi);background:var(--hi-soft)}
+.rung.target .lv{color:var(--hi-ink)}
+
+.cmp{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+@media (max-width:700px){.cmp{grid-template-columns:minmax(0,1fr)}}
+.code{border-radius:8px;background:var(--code-bg);overflow:hidden;min-width:0}
+.code .bar{padding:7px 12px;border-bottom:1px solid #ffffff14;font:500 11px var(--mono);color:var(--code-dim);letter-spacing:.06em;display:flex;justify-content:space-between}
+.code .bar b{font-weight:500}
+.code .bar .bad{color:#ff9b93} .code .bar .good{color:#8fe0b4}
+pre{margin:0;padding:12px 14px;overflow-x:auto;font:400 12.5px/1.6 var(--mono);color:var(--code-fg)}
+pre .c{color:var(--code-dim)} pre .k{color:var(--code-key)} pre .s{color:var(--code-str)}
+
+.flow{display:grid;gap:10px;margin:16px 0}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.q .ask{font-weight:600}
+.q .opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:8px}
+@media (max-width:560px){.q .opts{grid-template-columns:minmax(0,1fr)}}
+.opt{font-size:14px;border-radius:6px;padding:8px 10px}
+.opt.gen{background:var(--ok-soft)} .opt.gen b{color:var(--ok)}
+.opt.cur{background:var(--accent-soft)} .opt.cur b{color:var(--accent)}
+.opt.next{background:var(--sunken);color:var(--muted)}
+
+.qa{list-style:none;padding:0;counter-reset:q}
+.qa li{counter-increment:q;position:relative;padding:12px 14px 12px 50px;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:8px;max-width:none}
+.qa li::before{content:"Q" counter(q);position:absolute;left:14px;top:13px;font:600 12px var(--mono);color:var(--accent)}
+.qa li b{display:block}
+.qa li span{display:block;color:var(--muted);font-size:15px;margin-top:4px}
+
+.check{list-style:none;padding:0;columns:2;column-gap:28px}
+@media (max-width:700px){.check{columns:1}}
+.check li{break-inside:avoid;padding-left:26px;position:relative;font-size:15px}
+.check li::before{content:"";position:absolute;left:0;top:5px;width:14px;height:14px;border:1.5px solid var(--muted);border-radius:3px}
+
+.steps{list-style:none;padding:0;display:grid;gap:8px;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:40px minmax(0,1fr);gap:10px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-width:none}
+.steps li::before{content:counter(s);font:600 18px var(--mono);color:var(--accent)}
+.steps li span{color:var(--muted);font-size:14px;display:block}
+
+dl.gl{display:grid;grid-template-columns:170px minmax(0,1fr);gap:8px 18px;font-size:15px}
+dl.gl dt{font:500 14px var(--mono);color:var(--accent)}
+dl.gl dd{margin:0}
+@media (max-width:560px){dl.gl{grid-template-columns:minmax(0,1fr)} dl.gl dd{margin-bottom:8px}}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<nav class="toc" aria-label="Contents">
+  <div class="lbl">Contents</div>
+  <ol>
+    <li><a href="#answer">The short answer</a></li>
+    <li><a href="#difference">Our API vs machine-readable</a></li>
+    <li><a href="#readers">Who the machine is</a></li>
+    <li><a href="#standards">The standards</a></li>
+    <li><a href="#levels">Maturity levels</a></li>
+    <li><a href="#example">Example: prequal offers</a></li>
+    <li><a href="#routes">Three routes to MCP</a></li>
+    <li><a href="#decide">Which one, per operation</a></li>
+    <li><a href="#best">Recommendation</a></li>
+    <li><a href="#audit">Spec audit checklist</a></li>
+    <li><a href="#qa">Questions you may get</a></li>
+    <li><a href="#next">Next steps</a></li>
+    <li><a href="#glossary">Glossary and sources</a></li>
+  </ol>
+</nav>
+
+<main>
+<header>
+  <div class="eyebrow">Apply APIs · leadership briefing</div>
+  <h1>Machine-readable APIs and MCP</h1>
+  <p class="lede">What "machine-readable API" means, how it differs from the APIs we run today, and which approach to use when exposing Apply products to AI agents through MCP.</p>
+</header>
+
+<!-- 01 -->
+<section id="answer">
+  <h2><span class="n">01</span>The short answer</h2>
+  <div class="answer"><div class="k">In one sentence</div>
+    <p>A machine-readable API is not a different API. It is our existing API plus a complete, precise description that software can read and act on without a person explaining it. The industry standard for that description is the OpenAPI Specification.</p>
+  </div>
+  <p>Our APIs already return JSON, so the <em>data</em> is machine-readable. Every Apply API, including prequal, also already has a Swagger (OpenAPI) spec published through Apigee, so we are not starting from zero. What is usually incomplete is the <em>description</em>: what each field means, which values are possible, what each error means, which calls must happen in which order, and which calls are safe to retry. Developers fill those gaps by reading Confluence or asking a colleague. A program cannot. An AI agent is the extreme case, because it has no colleagues, no Confluence, and no memory of how the API behaved last week.</p>
+  <div class="callout info"><p><b>For MCP the two are not alternatives.</b> The machine-readable description is the foundation. MCP tools are built on top of it, either generated from it automatically or written by hand with it as the reference.</p></div>
+</section>
+
+<!-- 02 -->
+<section id="difference">
+  <h2><span class="n">02</span>Our API vs a machine-readable API</h2>
+  <figure>
+    <div class="frame">
+      <svg viewBox="0 0 780 300" style="width:100%;min-width:640px;height:auto" role="img" aria-label="Left: today, the prequal API is described by a partial spec, Confluence and people, read by developers. Right: the same API with a complete OpenAPI spec that feeds code generation, the gateway, contract tests, an API catalogue and MCP tools for AI agents." xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+        <text x="20" y="22" class="cap">TODAY</text>
+        <text x="410" y="22" class="cap">MACHINE-READABLE</text>
+        <line x1="390" y1="10" x2="390" y2="290" class="divider"/>
+        <!-- left -->
+        <rect x="20" y="120" width="120" height="56" rx="8" class="b-api"/>
+        <text x="80" y="144" class="t" text-anchor="middle">Prequal API</text>
+        <text x="80" y="162" class="s" text-anchor="middle">JSON over REST</text>
+        <rect x="190" y="48" width="170" height="44" rx="8" class="b"/>
+        <text x="275" y="68" class="t" text-anchor="middle">Swagger spec</text>
+        <text x="275" y="83" class="s" text-anchor="middle">in Apigee, depth varies</text>
+        <rect x="190" y="126" width="170" height="44" rx="8" class="b"/>
+        <text x="275" y="146" class="t" text-anchor="middle">Confluence pages</text>
+        <text x="275" y="161" class="s" text-anchor="middle">codes, rules, flows</text>
+        <rect x="190" y="204" width="170" height="44" rx="8" class="b"/>
+        <text x="275" y="224" class="t" text-anchor="middle">People</text>
+        <text x="275" y="239" class="s" text-anchor="middle">"ask the API team"</text>
+        <path d="M140 140 C165 140 165 70 188 70" class="e" marker-end="url(#a1)"/>
+        <line x1="140" y1="148" x2="188" y2="148" class="e" marker-end="url(#a1)"/>
+        <path d="M140 156 C165 156 165 226 188 226" class="e" marker-end="url(#a1)"/>
+        <text x="275" y="278" class="s" text-anchor="middle">readable by developers only</text>
+        <!-- right -->
+        <rect x="410" y="120" width="110" height="56" rx="8" class="b-api"/>
+        <text x="465" y="144" class="t" text-anchor="middle">Prequal API</text>
+        <text x="465" y="162" class="s" text-anchor="middle">unchanged</text>
+        <rect x="545" y="112" width="92" height="72" rx="8" class="b-spec"/>
+        <text x="591" y="138" class="t" text-anchor="middle">OpenAPI</text>
+        <text x="591" y="154" class="s" text-anchor="middle">complete,</text>
+        <text x="591" y="168" class="s" text-anchor="middle">meaningful</text>
+        <line x1="520" y1="148" x2="543" y2="148" class="e" marker-end="url(#a1)"/>
+        <rect x="660" y="34" width="110" height="34" rx="6" class="b"/><text x="715" y="55" class="s" text-anchor="middle">client codegen</text>
+        <rect x="660" y="78" width="110" height="34" rx="6" class="b"/><text x="715" y="99" class="s" text-anchor="middle">gateway rules</text>
+        <rect x="660" y="122" width="110" height="34" rx="6" class="b"/><text x="715" y="143" class="s" text-anchor="middle">contract tests</text>
+        <rect x="660" y="166" width="110" height="34" rx="6" class="b"/><text x="715" y="187" class="s" text-anchor="middle">API catalogue</text>
+        <rect x="660" y="210" width="110" height="40" rx="6" class="b-mcp"/><text x="715" y="228" class="t" text-anchor="middle" style="font-size:12px">MCP tools</text><text x="715" y="242" class="s" text-anchor="middle">→ AI agents</text>
+        <path d="M637 132 C650 132 645 51 658 51" class="e" marker-end="url(#a1)"/>
+        <path d="M637 140 C650 140 645 95 658 95" class="e" marker-end="url(#a1)"/>
+        <line x1="637" y1="148" x2="658" y2="140" class="e" marker-end="url(#a1)"/>
+        <path d="M637 156 C650 156 645 183 658 183" class="e" marker-end="url(#a1)"/>
+        <path d="M637 164 C650 164 645 230 658 230" class="e" marker-end="url(#a1)"/>
+        <text x="590" y="278" class="s" text-anchor="middle">one source of truth, readable by software</text>
+      </svg>
+    </div>
+    <figcaption>The API itself does not change. What changes is where its meaning lives: from people and wiki pages into one description that every consumer, including AI agents, can read.</figcaption>
+  </figure>
+  <div class="tbl"><table>
+    <thead><tr><th>Aspect</th><th>Our APIs today (Swagger specs via Apigee)</th><th>Machine-readable API</th></tr></thead>
+    <tbody>
+      <tr><td>The running endpoint</td><td>REST + JSON</td><td>Same endpoint, no rewrite</td></tr>
+      <tr><td>Where the meaning lives</td><td>Swagger spec for structure; meaning of codes and rules mostly in Confluence and people</td><td>One OpenAPI document, the source of truth</td></tr>
+      <tr><td>Field meaning</td><td><code>decisionCd: string</code></td><td><code>decisionCd</code> enum A1, D1, R1 with each value explained</td></tr>
+      <tr><td>Purpose of an operation</td><td>Implied by the URL</td><td>Summary and description say what it does and when to use it</td></tr>
+      <tr><td>Errors</td><td>Shape varies by API</td><td>One standard shape (RFC 9457 Problem Details) with documented codes</td></tr>
+      <tr><td>Business rules</td><td>Known by the team</td><td>Written down: idempotency, consent, retry safety, order of calls</td></tr>
+      <tr><td>Examples</td><td>Few or none</td><td>Request and response examples for each outcome</td></tr>
+      <tr><td>Accuracy</td><td>Drifts from the code over time</td><td>Checked in CI against the running API</td></tr>
+      <tr><td>Who can use it without help</td><td>Developers who can ask questions</td><td>Code generators, gateways, test tools, AI agents</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 03 -->
+<section id="readers">
+  <h2><span class="n">03</span>Who the "machine" is</h2>
+  <p>Three kinds of software read an API description. Each needs a little more than the one before.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Reader</th><th>What it does with the description</th><th>What it needs</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Tools</strong>: code generators, SDKs, mock servers</td><td>Generates client classes, stubs, documentation sites</td><td>Correct paths, types, required fields</td></tr>
+      <tr><td><strong>Platforms</strong>: gateways, test suites, catalogues</td><td>Validates requests, runs contract tests, lists APIs for discovery</td><td>Plus accurate errors, security schemes, versions</td></tr>
+      <tr><td><strong>AI agents</strong>: through MCP or similar</td><td>Decides <em>whether</em>, <em>when</em> and <em>how</em> to call the API, then explains the result to a person</td><td>Plus meaning: what codes signify, when to use each operation, what must happen first, what is safe to retry</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn"><p><b>Why the AI case is different:</b> a code generator that meets a vague field generates a vague field. An AI agent that meets a vague field guesses. In credit acquisition a guess can mean telling an applicant they were approved when they were only prequalified, or retrying an acceptance and creating a duplicate application.</p></div>
+</section>
+
+<!-- 04 -->
+<section id="standards">
+  <h2><span class="n">04</span>The standards involved</h2>
+  <p class="sub">Each piece is an open standard. None is specific to one vendor.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Standard</th><th>What it describes</th><th>Relevance to us</th></tr></thead>
+    <tbody>
+      <tr><td><strong>OpenAPI Specification</strong> (3.1, 3.2)</td><td>An HTTP API: paths, operations, parameters, request and response bodies, errors, security</td><td>The core of "machine-readable". We already use it through SwaggerHub; the question is completeness.</td></tr>
+      <tr><td><strong>JSON Schema</strong></td><td>The shape and rules of JSON data. OpenAPI 3.1 and later use it directly.</td><td>Types, enums, formats, required fields. MCP tool inputs are also JSON Schema.</td></tr>
+      <tr><td><strong>RFC 9457 Problem Details</strong></td><td>A standard JSON format for HTTP errors: <code>type</code>, <code>title</code>, <code>status</code>, <code>detail</code></td><td>One error shape across Apply APIs, so agents and clients handle errors the same way everywhere.</td></tr>
+      <tr><td><strong>Arazzo</strong> (OpenAPI Initiative)</td><td>Multi-step workflows across API calls, such as offers then accept then status</td><td>Makes our call sequence machine-readable instead of tribal knowledge.</td></tr>
+      <tr><td><strong>RFC 9727 api-catalog</strong></td><td>A well-known URI (<code>/.well-known/api-catalog</code>) listing an organisation's APIs</td><td>Discovery: lets tools and agents find which APIs exist. Optional, later.</td></tr>
+      <tr><td><strong>MCP</strong></td><td>How AI agents discover and call tools</td><td>The delivery channel to agents. Sits on top of the APIs and their descriptions.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 05 -->
+<section id="levels">
+  <h2><span class="n">05</span>Maturity levels</h2>
+  <p class="sub">A practical scale for answering "where are our APIs today?" Score each Apply API.</p>
+  <div class="ladder">
+    <div class="rung"><div class="lv">L0</div><div><div class="t1">Undescribed</div><div class="d">No spec. Knowledge in Confluence and people.</div></div></div>
+    <div class="rung"><div class="lv">L1</div><div><div class="t1">Partial spec <span class="tag typ">common</span></div><div class="d">A spec exists but is stale or covers only paths and types. Errors, enums and examples missing or wrong.</div></div></div>
+    <div class="rung"><div class="lv">L2</div><div><div class="t1">Complete and accurate <span class="tag typ">common</span></div><div class="d">Every operation, field, enum, error and security scheme is present, with examples. The spec is validated against the running API in CI, so it cannot drift.</div></div></div>
+    <div class="rung target"><div class="lv">L3</div><div><div class="t1">Agent-ready <span class="tag need">needed for MCP</span></div><div class="d">Each operation says what it is for and when to use it. Every code is explained. Errors use one standard shape. Idempotency, retry safety, consent and prerequisites are stated. Operation ids are clear verbs (<code>getPrequalOffers</code>, not <code>post1</code>).</div></div></div>
+    <div class="rung"><div class="lv">L4</div><div><div class="t1">Discoverable and workflow-aware</div><div class="d">Listed in an API catalogue. Multi-step flows described with Arazzo. Versioning and deprecation policy published.</div></div></div>
+  </div>
+  <div class="callout info"><p><b>Where we likely are:</b> all Apply APIs have Swagger specs in Apigee, so they are at least L1 and probably L2 for structure. The gap to L3 is meaning: code explanations, purpose, prerequisites, idempotency and error semantics. Also check the spec version: Swagger 2.0 specs may need converting to OpenAPI 3.x, which most MCP generators expect. Conversion is a tooling step, not a rewrite.</p></div>
+  <p>Auto-generating good MCP tools needs <strong>L3</strong>. A curated MCP server can work with L2, because the missing meaning is written into the tool layer by hand, but L3 still makes that work faster and safer.</p>
+</section>
+
+<!-- 06 -->
+<section id="example">
+  <h2><span class="n">06</span>Example: the prequal offers operation</h2>
+  <p class="sub">The same endpoint described at L1 and at L3. The API does not change; only the description does.</p>
+  <div class="cmp">
+    <div class="code"><div class="bar"><b>openapi.yaml</b><span class="bad">L1 · partial</span></div><pre><span class="k">/v1/prequal/offers</span>:
+  <span class="k">post</span>:
+    <span class="k">operationId</span>: postOffers
+    <span class="k">requestBody</span>:
+      <span class="k">content</span>:
+        application/json:
+          <span class="k">schema</span>:
+            $ref: <span class="s">'#/components/schemas/Req'</span>
+    <span class="k">responses</span>:
+      <span class="s">'200'</span>:
+        <span class="k">description</span>: OK
+        <span class="k">content</span>:
+          application/json:
+            <span class="k">schema</span>:
+              <span class="k">properties</span>:
+                <span class="k">prequalId</span>: { type: string }
+                <span class="k">decisionCd</span>: { type: string }
+                <span class="k">offers</span>: { type: array }
+      <span class="s">'400'</span>:
+        <span class="k">description</span>: Bad request</pre></div>
+    <div class="code"><div class="bar"><b>openapi.yaml</b><span class="good">L3 · agent-ready</span></div><pre><span class="k">/v1/prequal/offers</span>:
+  <span class="k">post</span>:
+    <span class="k">operationId</span>: getPrequalOffers
+    <span class="k">summary</span>: Check credit card prequalification
+    <span class="k">description</span>: &gt;
+      Soft credit inquiry; does not affect the
+      applicant's score. First step of a prequal.
+      Requires the applicant's explicit consent.
+      Not a final credit decision.
+    <span class="k">responses</span>:
+      <span class="s">'200'</span>:
+        <span class="k">content</span>:
+          application/json:
+            <span class="k">schema</span>:
+              <span class="k">properties</span>:
+                <span class="k">decisionCd</span>:
+                  <span class="k">type</span>: string
+                  <span class="k">enum</span>: [A1, D1, R1]
+                  <span class="k">description</span>: &gt;
+                    A1 qualified, offers returned.
+                    D1 not qualified.
+                    R1 identity or address not
+                    confirmed; ask applicant to
+                    check details and retry.
+            <span class="k">examples</span>: { qualified: …, declined: … }
+      <span class="s">'400'</span>:
+        <span class="k">content</span>:
+          application/problem+json:   <span class="c"># RFC 9457</span>
+            <span class="k">schema</span>: { $ref: Problem }</pre></div>
+  </div>
+  <p>The L1 version tells a program that <code>decisionCd</code> is a string. The L3 version tells it what the three possible values mean and what to do about each. An agent working from the L1 version would have to guess what <code>A1</code> means.</p>
+  <h3>The workflow, also machine-readable (Arazzo, L4)</h3>
+  <div class="code"><div class="bar"><b>prequal.arazzo.yaml (sketch)</b><span>L4</span></div><pre><span class="k">workflows</span>:
+  - <span class="k">workflowId</span>: prequalifyAndApply
+    <span class="k">steps</span>:
+      - <span class="k">stepId</span>: getOffers
+        <span class="k">operationId</span>: getPrequalOffers
+        <span class="k">successCriteria</span>: [ { condition: <span class="s">$response.body.decisionCd == 'A1'</span> } ]
+      - <span class="k">stepId</span>: accept
+        <span class="k">operationId</span>: acceptPrequalOffer
+        <span class="k">parameters</span>: [ { name: prequalId, value: <span class="s">$steps.getOffers.outputs.prequalId</span> } ]
+      - <span class="k">stepId</span>: status
+        <span class="k">operationId</span>: getApplicationStatus</pre></div>
+</section>
+
+<!-- 07 -->
+<section id="routes">
+  <h2><span class="n">07</span>Three routes from an API to MCP tools</h2>
+  <figure>
+    <div class="frame">
+      <svg viewBox="0 0 780 320" style="width:100%;min-width:640px;height:auto" role="img" aria-label="Three routes from the OpenAPI spec to AI agents: route A generates tools automatically with a generator or Kong; route B uses a curated MCP server with a tool layer; route C is a hybrid where reads are generated and state-changing actions are curated." xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker></defs>
+        <rect x="16" y="120" width="120" height="70" rx="8" class="b-api"/>
+        <text x="76" y="146" class="t" text-anchor="middle">Apply APIs</text>
+        <text x="76" y="162" class="s" text-anchor="middle">+ OpenAPI spec</text>
+        <text x="76" y="176" class="s" text-anchor="middle">(L2–L3)</text>
+        <!-- A -->
+        <text x="180" y="30" class="cap">A · GENERATE</text>
+        <rect x="180" y="40" width="190" height="56" rx="8" class="b"/>
+        <text x="275" y="63" class="t" text-anchor="middle">Apigee MCP / Kong</text>
+        <text x="275" y="80" class="s" text-anchor="middle">1 operation = 1 tool</text>
+        <rect x="410" y="40" width="200" height="56" rx="8" class="b"/>
+        <text x="510" y="63" class="t" text-anchor="middle">Generic tools</text>
+        <text x="510" y="80" class="s" text-anchor="middle">quality = spec quality</text>
+        <!-- B -->
+        <text x="180" y="130" class="cap">B · CURATE</text>
+        <rect x="180" y="140" width="190" height="56" rx="8" class="b-mcp"/>
+        <text x="275" y="163" class="t" text-anchor="middle">Curated MCP server</text>
+        <text x="275" y="180" class="s" text-anchor="middle">tool layer, rules in code</text>
+        <rect x="410" y="140" width="200" height="56" rx="8" class="b-mcp"/>
+        <text x="510" y="163" class="t" text-anchor="middle">Task tools</text>
+        <text x="510" y="180" class="s" text-anchor="middle">consent, idempotency enforced</text>
+        <!-- C -->
+        <text x="180" y="230" class="cap">C · HYBRID (RECOMMENDED)</text>
+        <rect x="180" y="240" width="190" height="62" rx="8" class="b-spec"/>
+        <text x="275" y="263" class="t" text-anchor="middle">Reads: generated</text>
+        <text x="275" y="281" class="t" text-anchor="middle">Writes: curated</text>
+        <rect x="410" y="240" width="200" height="62" rx="8" class="b-spec"/>
+        <text x="510" y="263" class="t" text-anchor="middle">One catalogue</text>
+        <text x="510" y="281" class="s" text-anchor="middle">behind one gateway</text>
+        <!-- agents -->
+        <rect x="650" y="130" width="116" height="70" rx="8" class="b"/>
+        <text x="708" y="160" class="t" text-anchor="middle">AI agents</text>
+        <text x="708" y="177" class="s" text-anchor="middle">via MCP</text>
+        <!-- edges -->
+        <path d="M136 140 C158 140 158 68 178 68" class="e" marker-end="url(#a2)"/>
+        <line x1="136" y1="160" x2="178" y2="168" class="e" marker-end="url(#a2)"/>
+        <path d="M136 176 C158 176 158 271 178 271" class="e" marker-end="url(#a2)"/>
+        <line x1="370" y1="68" x2="408" y2="68" class="e" marker-end="url(#a2)"/>
+        <line x1="370" y1="168" x2="408" y2="168" class="e" marker-end="url(#a2)"/>
+        <line x1="370" y1="271" x2="408" y2="271" class="e" marker-end="url(#a2)"/>
+        <path d="M610 68 C632 68 630 150 648 150" class="e-dash" marker-end="url(#a2)"/>
+        <line x1="610" y1="168" x2="648" y2="166" class="e-dash" marker-end="url(#a2)"/>
+        <path d="M610 271 C632 271 630 184 648 184" class="e-dash" marker-end="url(#a2)"/>
+      </svg>
+    </div>
+    <figcaption>All three routes start from the same APIs and the same spec. They differ in where business rules live: nowhere (A), in a tool layer (B), or in a tool layer only where needed (C).</figcaption>
+  </figure>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>A · Generate from spec</th><th>B · Curated MCP server</th><th>C · Hybrid</th></tr></thead>
+    <tbody>
+      <tr><td>How</td><td>Gateway turns each spec operation into a tool: Apigee MCP proxy (preview) or Kong AI MCP Proxy conversion mode</td><td>Hand-written tools over the APIs (our prequal POC)</td><td>Generate simple reads, curate state-changing and regulated actions</td></tr>
+      <tr><td>Effort per API</td><td class="y">Very low once the spec is L3</td><td class="m">Medium</td><td class="m">Low for reads, medium for writes</td></tr>
+      <tr><td>Agent accuracy</td><td class="m">Only as good as the spec</td><td class="y">High</td><td class="y">High</td></tr>
+      <tr><td>Enforces consent, confirmation, "one acceptance"</td><td class="n">No</td><td class="y">Yes, in code</td><td class="y">Yes, where it matters</td></tr>
+      <tr><td>Internal codes reach the agent</td><td class="n">Yes, unless the spec explains them</td><td class="y">No, translated</td><td class="y">No for writes; explained in spec for reads</td></tr>
+      <tr><td>Number of tools</td><td class="n">One per endpoint; grows fast</td><td class="y">One per business task</td><td class="y">Controlled</td></tr>
+      <tr><td>Backend change</td><td class="y">None</td><td class="y">None</td><td class="y">None</td></tr>
+      <tr><td>Needs a good spec?</td><td>Yes, L3 is essential</td><td>Helpful (L2+)</td><td>Yes, L3 for generated parts</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Apigee can already do route A</h3>
+  <p>Google has added MCP support to Apigee, currently in <strong>preview</strong> (access through the Apigee or Google Cloud account team). You deploy an "MCP proxy" with an OpenAPI spec attached, and Apigee serves the spec's operations as MCP tools. No code and no separate MCP server. The MCP proxy can be bundled in an API product, so the usual Apigee quota, identity and access policies decide which agents can list and call which tools, and the proxy is registered in Apigee API hub as a tool catalogue.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>What Apigee MCP gives us</th><th>What it does not change</th></tr></thead>
+    <tbody>
+      <tr><td>MCP endpoint with no code, from our existing specs</td><td>Tool quality still equals spec quality, so specs must reach L3</td></tr>
+      <tr><td>Same Apigee policies, API products and analytics we already run</td><td>No business logic: it cannot require consent, confirmation, or prevent a second acceptance</td></tr>
+      <tr><td>Tool catalogue in API hub</td><td>Internal codes and full payloads reach the agent unless the spec and proxy handle them</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn"><p><b>Check before promising it:</b> the feature is in preview, and documentation refers to Apigee on Google Cloud and Apigee hybrid. Confirm which Apigee edition we run and whether the preview is enabled for us. Our curated server works regardless, and can itself sit behind Apigee as a normal proxy.</p></div>
+</section>
+
+<!-- 08 -->
+<section id="decide">
+  <h2><span class="n">08</span>Which route, operation by operation</h2>
+  <p class="sub">Ask these questions about each API operation in order. The first "yes" decides.</p>
+  <div class="flow">
+    <div class="q"><div class="ask">1. Does it change state or create something? (accept offer, submit application, update details)</div>
+      <div class="opts"><div class="opt cur"><b>Yes → Curate.</b> Needs confirmation, idempotency key and audit in code.</div><div class="opt next">No → question 2</div></div></div>
+    <div class="q"><div class="ask">2. Does it involve consent, disclosures or a credit inquiry? (prequal offers)</div>
+      <div class="opts"><div class="opt cur"><b>Yes → Curate.</b> A consent check must be enforced, not just described.</div><div class="opt next">No → question 3</div></div></div>
+    <div class="q"><div class="ask">3. Does the response contain internal codes or more data than an agent should see?</div>
+      <div class="opts"><div class="opt cur"><b>Yes, and the spec can't explain them → Curate</b> (translate and trim).</div><div class="opt next">No, or the spec explains them → question 4</div></div></div>
+    <div class="q"><div class="ask">4. Is the spec at L3 for this operation?</div>
+      <div class="opts"><div class="opt gen"><b>Yes → Generate.</b> A simple read with a good spec is a good candidate (application status lookup).</div><div class="opt next">No → fix the spec first, then generate</div></div></div>
+  </div>
+  <h3>Applied to prequal</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Operation</th><th>Decision</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td>Get offers</td><td><strong>Curate</strong></td><td>Credit inquiry with consent; codes need translation</td></tr>
+      <tr><td>Accept offer</td><td><strong>Curate</strong></td><td>Irreversible, idempotency, confirmation</td></tr>
+      <tr><td>Application status</td><td><strong>Generate later</strong> (curated today)</td><td>Read only; possible once the spec explains status codes</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- 09 -->
+<section id="best">
+  <h2><span class="n">09</span>Recommendation</h2>
+  <div class="answer"><div class="k">What is best</div>
+    <p>Keep the APIs. Raise their OpenAPI specs to agent-ready (L3). Use a hybrid route to MCP: generate simple read-only tools from the specs, and hand-build tools for anything that changes state, touches consent, or creates an application.</p>
+  </div>
+  <h3>Why</h3>
+  <ul>
+    <li><strong>Spec quality benefits everyone,</strong> not only AI: generated clients, contract tests, gateway validation, partner onboarding, one source of truth.</li>
+    <li><strong>Generation alone is not safe for credit actions.</strong> A generator copies the API's shape. It cannot require consent, prevent a second acceptance, or stop an agent retrying with a new idempotency key.</li>
+    <li><strong>Curation alone does not scale</strong> to every Apply API. Generating reads keeps effort proportional to risk.</li>
+    <li><strong>No backend rewrites</strong>, so no regression risk for web, mobile and partner channels.</li>
+    <li><strong>Fits Apigee today, Kong later.</strong> Apigee's MCP proxy (preview) or Kong's conversion mode covers route A; either gateway can front the curated server in route B as a normal proxy.</li>
+  </ul>
+  <h3>What to say</h3>
+  <blockquote class="say">"Machine-readable is about the description, not the API. All our APIs already have Swagger specs in Apigee. We keep the APIs, enrich those specs until they are agent-ready, and then generate MCP tools for simple reads while hand-building tools for anything that creates an application or involves consent. Our prequal proof of concept already shows the hand-built path working."</blockquote>
+</section>
+
+<!-- 10 -->
+<section id="audit">
+  <h2><span class="n">10</span>Spec audit checklist (L3)</h2>
+  <p class="sub">Use per API. Every unchecked item is a gap to fix.</p>
+  <ul class="check">
+    <li>Spec in Apigee / SwaggerHub matches production</li>
+    <li>Spec is OpenAPI 3.x (convert from Swagger 2.0 if needed)</li>
+    <li>Spec validated against the running API in CI</li>
+    <li>Every operation has a clear <code>operationId</code> verb</li>
+    <li>Every operation has a summary and a "when to use" description</li>
+    <li>Every request and response field has a description</li>
+    <li>Every coded field is an <code>enum</code> with each value explained</li>
+    <li>Required fields, formats and limits are declared</li>
+    <li>Every error status is documented with its codes</li>
+    <li>Errors use RFC 9457 Problem Details (or one agreed shape)</li>
+    <li>Idempotency documented: header, replay behaviour, 409 meaning</li>
+    <li>Retry safety stated per operation</li>
+    <li>Prerequisites stated (consent, prior call, auth scope)</li>
+    <li>Examples for success and each main failure</li>
+    <li>Security scheme declared (OAuth scopes or API key)</li>
+    <li>PII fields marked (for example an <code>x-pii: true</code> extension)</li>
+    <li>Version and deprecation policy stated</li>
+  </ul>
+</section>
+
+<!-- 11 -->
+<section id="qa">
+  <h2><span class="n">11</span>Questions you may get</h2>
+  <ol class="qa">
+    <li><b>Are our APIs machine-readable today?</b><span>Yes for structure: every Apply API, including prequal, has a Swagger spec in Apigee (L1–L2). Not yet agent-ready (L3): what codes mean, prerequisites, idempotency and error meanings live mostly outside the spec. The work is enriching specs we already have, not creating them.</span></li>
+    <li><b>We have Apigee. Can Apigee expose our APIs as MCP?</b><span>Yes, Apigee has MCP support in preview: an MCP proxy serves a spec's operations as tools, governed by API products and the usual policies. It is the gateway version of route A, so it suits simple reads with good specs. For accept and other consent-bearing actions we still need the curated tool layer, which can sit behind Apigee as a normal proxy. Confirm edition and preview access with the account team.</span></li>
+    <li><b>Do we need to build new APIs?</b><span>No. The work is improving the descriptions, plus a thin tool layer for MCP.</span></li>
+    <li><b>Can Kong convert our APIs into MCP tools automatically?</b><span>Yes, its AI MCP Proxy plugin has a conversion mode that builds tools from OpenAPI. It works well for simple reads with good specs. It is not enough for accepting offers, because it cannot enforce consent, confirmation or idempotency rules, and it passes internal codes through unchanged.</span></li>
+    <li><b>Then why not curate everything?</b><span>Effort. Curating every endpoint across all Apply products is slow. Generating reads from good specs lets the team spend hand-built effort only where risk is high.</span></li>
+    <li><b>What is the biggest risk?</b><span>A poor spec produces an agent that guesses. In credit that can mean misstating a decision or duplicating an application. So spec quality is a control, not documentation overhead.</span></li>
+    <li><b>Is this an industry standard or our own idea?</b><span>Standard. OpenAPI and JSON Schema for description, RFC 9457 for errors, Arazzo for workflows, RFC 9727 for discovery, MCP for agent access.</span></li>
+    <li><b>How long does it take?</b><span>Spec uplift is per API and depends on the gap found in the audit. The curated prequal POC exists already. A sensible first milestone is one API at L3 plus one generated read-only tool.</span></li>
+    <li><b>Who owns it?</b><span>Each API team owns its spec; the L3 checklist becomes part of the definition of done for API changes. The MCP layer is owned centrally as one service.</span></li>
+    <li><b>Does this help beyond AI?</b><span>Yes: generated clients, contract testing, gateway request validation, faster partner onboarding, fewer "how does this field work" questions.</span></li>
+  </ol>
+</section>
+
+<!-- 12 -->
+<section id="next">
+  <h2><span class="n">12</span>Proposed next steps</h2>
+  <ol class="steps">
+    <li><div><b>Audit</b><span>Score every Apply API L0–L4 using the checklist in section 10.</span></div></li>
+    <li><div><b>Reference API</b><span>Lift the prequal spec to L3 as the model for other teams.</span></div></li>
+    <li><div><b>Standard</b><span>Agree the L3 checklist and one error format as the definition of done for API changes.</span></div></li>
+    <li><div><b>Generation pilot</b><span>Ask the Apigee account team for MCP preview access, then expose one read-only operation (application status) through an Apigee MCP proxy from an L3 spec and compare it with the curated tool.</span></div></li>
+    <li><div><b>Curated layer</b><span>Continue the curated MCP server for state-changing and consent-bearing flows.</span></div></li>
+    <li><div><b>Gateway</b><span>Front the curated MCP server with Apigee (or Kong if production moves) and decide the caller authentication model and API products for agents.</span></div></li>
+  </ol>
+</section>
+
+<!-- 13 -->
+<section id="glossary">
+  <h2><span class="n">13</span>Glossary and sources</h2>
+  <dl class="gl">
+    <dt>Machine-readable API</dt><dd>An API whose behaviour and meaning are fully described in a format software can read, usually OpenAPI.</dd>
+    <dt>Agent-ready</dt><dd>Machine-readable plus meaning: purpose, code meanings, prerequisites, retry safety. Level L3 here.</dd>
+    <dt>OpenAPI</dt><dd>Standard document format describing HTTP APIs. Swagger is the older name and a tool family.</dd>
+    <dt>JSON Schema</dt><dd>Standard for describing the shape and rules of JSON data.</dd>
+    <dt>Problem Details</dt><dd>RFC 9457 standard error format for HTTP APIs.</dd>
+    <dt>Arazzo</dt><dd>OpenAPI Initiative standard for describing multi-step API workflows.</dd>
+    <dt>API catalogue</dt><dd>A list of an organisation's APIs; RFC 9727 defines a standard location for it.</dd>
+    <dt>MCP</dt><dd>Model Context Protocol: how AI agents discover and call tools.</dd>
+    <dt>Curated tool</dt><dd>An MCP tool written by hand over an API, with business rules in code.</dd>
+    <dt>Generated tool</dt><dd>An MCP tool produced automatically from an OpenAPI operation.</dd>
+  </dl>
+  <h3>Sources</h3>
+  <ul>
+    <li><a href="https://spec.openapis.org/arazzo/v1.0">Arazzo Specification v1.0.1 (OpenAPI Initiative)</a></li>
+    <li><a href="https://swagger.io/blog/swagger-launches-support-for-openapi-3-2-0/">Swagger: support for OpenAPI 3.2.0</a></li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc9727">RFC 9727: api-catalog well-known URI</a></li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc9457">RFC 9457: Problem Details for HTTP APIs</a></li>
+    <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/mcp-support-for-apigee">Google Cloud: MCP support for Apigee (preview)</a></li>
+    <li><a href="https://docs.cloud.google.com/apigee/docs/api-platform/apigee-mcp/apigee-mcp-overview">Apigee docs: Apigee and MCP overview</a></li>
+    <li><a href="https://developer.konghq.com/plugins/ai-mcp-proxy/">Kong: AI MCP Proxy plugin</a></li>
+    <li><a href="https://developer.konghq.com/mcp/autogenerate-mcp-tools">Kong: Autogenerate MCP tools from a RESTful API</a></li>
+  </ul>
+</section>
+
+<footer>Apply APIs · machine-readable APIs and MCP · Companion to the Prequal MCP Field Guide and the apply-mcp-server handbook.</footer>
+</main>
+</div>
+
+</body>
+</html>
