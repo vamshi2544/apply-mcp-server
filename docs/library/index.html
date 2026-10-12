@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apply MCP Library</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"><style>/* Layout: multi-page engineering library. Library bar on top, sticky page contents on the left, one reading column; figures and tables scroll inside their own frames. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --sunken:#eef1f5; --line:#d6dbe4;
+  --fg:#1c2330; --muted:#566173; --accent:#003087; --accent-soft:#e3e9f5;
+  --hi:#ffc500; --hi-ink:#4a3a00; --hi-soft:#fff6d6;
+  --ok:#1f7a4d; --ok-soft:#e2f3ea; --warn:#9a5b00; --warn-soft:#fdf0dc; --bad:#b3261e; --bad-soft:#fbe5e3;
+  --code-bg:#0f1b33; --code-fg:#dfe6f3; --code-dim:#8fa0bf; --code-key:#ffd75e; --code-str:#9fd8b8;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body)}
+
+.libbar{border-bottom:1px solid var(--line);background:var(--surface)}
+.libbar .in{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:10px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}
+.libbar .brand{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-right:8px;text-decoration:none}
+.libbar a.pg{font-size:14px;color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.libbar a.pg:hover{color:var(--fg)}
+.libbar a.pg.on{color:var(--fg);border-bottom-color:var(--hi);font-weight:600}
+@media (max-width:640px){.libbar .in{padding-inline:16px}}
+
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:28px 80px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+@media (max-width:940px){.wrap{grid-template-columns:minmax(0,1fr);gap:22px;padding-inline:16px}}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;font-size:14px;max-height:calc(100vh - 40px);overflow:auto}
+nav.toc .lbl{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+nav.toc a{display:flex;gap:10px;padding:5px 10px;border-radius:6px;color:var(--muted);text-decoration:none;line-height:1.4}
+nav.toc a .n{font:500 12px/1.65 var(--mono);color:var(--muted);opacity:.6;flex:none}
+nav.toc a:hover{background:var(--accent-soft);color:var(--accent)}
+@media (max-width:940px){nav.toc{position:static;max-height:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+  nav.toc ol{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}}
+
+main{min-width:0;max-width:840px}
+header.page{padding-bottom:24px;border-bottom:1px solid var(--line)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font:650 clamp(30px,5vw,44px)/1.1 var(--display);margin:14px 0 12px;text-wrap:balance}
+.lede{font-size:18px;color:var(--muted);max-width:66ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{font:500 12px/1 var(--mono);padding:7px 10px;border-radius:999px;background:var(--sunken);color:var(--muted);border:1px solid var(--line)}
+
+section{padding-top:46px;scroll-margin-top:12px}
+h2{font:650 27px/1.2 var(--display);margin:0 0 8px;display:flex;gap:14px;align-items:baseline;text-wrap:balance}
+h2 .n{font:500 14px var(--mono);color:var(--accent);flex:none}
+h3{font:600 18px/1.35 var(--body);margin:28px 0 8px}
+h4{font:600 15px/1.4 var(--body);margin:20px 0 6px}
+p,li{max-width:70ch}
+p{margin:0 0 14px}
+ul,ol{padding-left:22px;margin:0 0 14px}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+strong{font-weight:600}
+.sub{color:var(--muted)}
+code{font:500 .87em var(--mono);background:var(--sunken);border:1px solid var(--line);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+
+.answer{background:var(--hi-soft);border:1px solid color-mix(in srgb,var(--hi) 55%,var(--line));border-left:6px solid var(--hi);border-radius:8px;padding:16px 20px;margin:18px 0}
+.answer .k{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--hi-ink);margin-bottom:8px}
+.answer p{font-size:17px;line-height:1.55}
+.answer p:last-child{margin:0}
+.callout{border-radius:8px;padding:14px 18px;margin:16px 0;font-size:15px}
+.callout.info{background:var(--accent-soft)} .callout.info b{color:var(--accent)}
+.callout.warn{background:var(--warn-soft)} .callout.warn b{color:var(--warn)}
+.callout.ok{background:var(--ok-soft)} .callout.ok b{color:var(--ok)}
+.callout.bad{background:var(--bad-soft)} .callout.bad b{color:var(--bad)}
+.callout p:last-child,.callout ul:last-child{margin-bottom:0}
+.analogy{border:1px dashed var(--line);border-radius:8px;padding:12px 16px;margin:16px 0;font-size:15px;background:var(--surface)}
+.analogy b{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+
+figure{margin:18px 0 22px}
+figure .frame{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:80ch}
+svg text{font-family:var(--body)}
+svg.d{width:100%;height:auto}
+.lane-box{fill:var(--sunken);stroke:var(--line)}
+.lane-hi{fill:var(--hi-soft);stroke:var(--hi)}
+.lane-ext{fill:var(--accent-soft);stroke:var(--accent)}
+.lane-t{font-size:12.5px;font-weight:600;fill:var(--fg)}
+.lane-s{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.life{stroke:var(--line);stroke-dasharray:4 4}
+.phase{fill:var(--accent-soft)}
+.phase-t{font-size:11.5px;font-weight:600;fill:var(--accent);font-family:var(--mono)}
+.msg-req{stroke:var(--fg);stroke-width:1.4}
+.msg-res{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 3}
+.msg-bad{stroke:var(--bad);stroke-width:1.4}
+.ah{fill:var(--fg)} .ah2{fill:var(--muted)} .ah3{fill:var(--bad)}
+.msg-t{font-size:11px;fill:var(--fg);font-family:var(--mono);paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
+.note-box{fill:var(--surface);stroke:var(--line)}
+.note-t{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.self{fill:none;stroke:var(--fg);stroke-width:1.3}
+.b{fill:var(--surface);stroke:var(--line)}
+.b-api{fill:var(--sunken);stroke:var(--muted)}
+.b-hi{fill:var(--hi-soft);stroke:var(--hi)}
+.b-acc{fill:var(--accent-soft);stroke:var(--accent)}
+.b-ok{fill:var(--ok-soft);stroke:var(--ok)}
+.b-bad{fill:var(--bad-soft);stroke:var(--bad)}
+.zone{fill:none;stroke:var(--line);stroke-dasharray:5 4}
+.zone-t{font-size:10.5px;fill:var(--muted);font-family:var(--mono);letter-spacing:.08em}
+.t{font-size:12.5px;font-weight:600;fill:var(--fg)}
+.s{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.e{stroke:var(--muted);stroke-width:1.4;fill:none}
+.e-acc{stroke:var(--accent);stroke-width:1.6;fill:none}
+.e-dash{stroke:var(--muted);stroke-width:1.2;fill:none;stroke-dasharray:4 4}
+.e-bad{stroke:var(--bad);stroke-width:1.4;fill:none;stroke-dasharray:5 3}
+.et{font-size:10.5px;fill:var(--muted);font-family:var(--mono);paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;border:1px solid;display:inline-block}
+.sw.hi{background:var(--hi-soft);border-color:var(--hi)}
+.sw.acc{background:var(--accent-soft);border-color:var(--accent)}
+.sw.api{background:var(--sunken);border-color:var(--muted)}
+.sw.ext{background:var(--surface);border-color:var(--line)}
+
+.tbl{overflow-x:auto;margin:14px 0 18px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px/1.3 var(--body);color:var(--muted);background:var(--sunken)}
+tr:last-child td{border-bottom:0}
+tr.grp td{background:var(--sunken);font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 12px}
+tr.pick td{background:var(--hi-soft)}
+td.y{color:var(--ok);font-weight:600} td.n{color:var(--bad);font-weight:600} td.m{color:var(--warn);font-weight:600}
+
+.code{margin:12px 0 18px;border-radius:8px;background:var(--code-bg);overflow:hidden;min-width:0}
+.code .bar{padding:7px 12px;border-bottom:1px solid #ffffff14;font:500 11px var(--mono);color:var(--code-dim);letter-spacing:.06em}
+pre{margin:0;padding:12px 16px;overflow-x:auto;font:400 12.5px/1.6 var(--mono);color:var(--code-fg)}
+pre .c{color:var(--code-dim)} pre .k{color:var(--code-key)} pre .s{color:var(--code-str)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.card .t1{font-weight:600;margin-bottom:2px}
+.card .e1{font:500 11.5px var(--mono);color:var(--accent);margin-bottom:6px}
+.card p{font-size:14px;color:var(--muted);margin:0}
+a.card{text-decoration:none;color:inherit;display:block}
+a.card:hover{border-color:var(--accent)}
+a.card .go{font:500 12px var(--mono);color:var(--accent);margin-top:10px}
+
+.steps{list-style:none;padding:0;display:grid;gap:8px;counter-reset:s}
+.steps>li{counter-increment:s;display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-width:none}
+.steps>li::before{content:counter(s);font:600 18px var(--mono);color:var(--accent)}
+.steps>li b{display:block}
+.steps>li span{color:var(--muted);font-size:14.5px;display:block}
+
+.qa{list-style:none;padding:0;counter-reset:q}
+.qa>li{counter-increment:q;position:relative;padding:14px 16px 14px 52px;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:10px;max-width:none}
+.qa>li::before{content:"Q" counter(q);position:absolute;left:14px;top:15px;font:600 12px var(--mono);color:var(--accent)}
+.qa>li>b{display:block;margin-bottom:4px}
+.qa>li>div{color:var(--fg);font-size:15px}
+.qa>li>div p{margin-bottom:8px}
+
+.check{list-style:none;padding:0;columns:2;column-gap:28px}
+@media (max-width:700px){.check{columns:1}}
+.check li{break-inside:avoid;padding-left:26px;position:relative;font-size:15px}
+.check li::before{content:"";position:absolute;left:0;top:5px;width:14px;height:14px;border:1.5px solid var(--muted);border-radius:3px}
+
+.phases{display:grid;gap:10px;margin:16px 0}
+.ph{display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+@media (max-width:600px){.ph{grid-template-columns:minmax(0,1fr);gap:6px}}
+.ph .w{font:600 12px var(--mono);color:var(--accent)}
+.ph .w span{display:block;font-weight:400;color:var(--muted);margin-top:4px}
+.ph .t1{font-weight:600;margin-bottom:4px}
+.ph ul{margin:6px 0 0;font-size:14.5px}
+.ph .exit{margin-top:8px;font-size:14px;background:var(--ok-soft);border-radius:6px;padding:8px 10px}
+.ph .exit b{color:var(--ok)}
+.ph.now{border-color:var(--hi);background:var(--hi-soft)}
+
+.layers{display:grid;gap:6px;margin:16px 0}
+.layer{display:grid;grid-template-columns:44px 170px minmax(0,1fr);gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+@media (max-width:640px){.layer{grid-template-columns:36px minmax(0,1fr)} .layer .d{grid-column:2}}
+.layer .no{font:600 16px var(--mono);color:var(--accent)}
+.layer .t1{font-weight:600}
+.layer .d{font-size:14.5px;color:var(--muted)}
+
+dl.gl{display:grid;grid-template-columns:190px minmax(0,1fr);gap:8px 18px;font-size:15px}
+dl.gl dt{font:500 14px var(--mono);color:var(--accent)}
+dl.gl dd{margin:0}
+@media (max-width:560px){dl.gl{grid-template-columns:minmax(0,1fr)} dl.gl dd{margin-bottom:8px}}
+
+.pager{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:56px}
+.pager a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px;text-decoration:none;color:var(--fg)}
+.pager a:hover{border-color:var(--accent)}
+.pager .k{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pager .nx{text-align:right;grid-column:2}
+footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="libbar"><div class="in"><a class="brand" href="index.html">Apply MCP Library</a><a class="pg on" href="index.html">Start here</a><a class="pg" href="mcp-from-zero.html">1 · MCP from zero</a><a class="pg" href="security-and-identity.html">2 · Security and identity</a><a class="pg" href="reference-architecture.html">3 · Reference architecture</a><a class="pg" href="roadmap.html">4 · Roadmap and build guide</a></div></div><div class="wrap"><nav class="toc" aria-label="On this page"><div class="lbl">On this page</div><ol><li><a href="#answers"><span class="n">01</span><span>Your questions, answered briefly</span></a></li><li><a href="#picture"><span class="n">02</span><span>The whole picture</span></a></li><li><a href="#read"><span class="n">03</span><span>Reading order</span></a></li><li><a href="#decisions"><span class="n">04</span><span>Recommended decisions at a glance</span></a></li><li><a href="#status"><span class="n">05</span><span>Where we are today</span></a></li><li><a href="#sources"><span class="n">06</span><span>Sources</span></a></li></ol></nav><main><header class="page">
+  <div class="eyebrow">Apply API team · MCP enablement</div>
+  <h1>Apply MCP Library</h1>
+  <p class="lede">Four documents that explain, from first principles, how to expose Apply products such as credit card prequalification to AI agents through the Model Context Protocol: what MCP is, how agents are authenticated, how it fits on Apigee and PCF, and how to get from our proof of concept to production.</p>
+  <div class="meta"><span class="chip">4 documents · ~2.5 hours</span><span class="chip">MCP spec 2026-07-28</span><span class="chip">Apigee · PCF · Spring Boot</span></div>
+</header>
+
+<section id="answers">
+  <h2><span class="n">01</span>Your questions, answered briefly</h2>
+  <ol class="qa">
+    <li><b>Can we authenticate an agent before it lands on Apigee or Kong?</b><div><p>Yes. Before calling us, the AI application obtains an OAuth access token from our corporate identity provider: an employee signs in with SSO and MFA, or an agent platform authenticates with a certificate. Apigee is the first component on our side; it validates the token (signature, issuer, audience, scopes for the specific tool) and rejects everything else. The MCP server validates again. Network rules can block unknown sources even earlier. <a href="security-and-identity.html#answer">Document 2</a></p></div></li>
+    <li><b>Why use Apigee at all instead of exposing the PCF app directly?</b><div><p>A PCF route only delivers traffic. Apigee decides who may call, how often and with which permissions, gives analytics and threat protection, and is the pattern security has already approved for our APIs. An MCP server reachable directly would bypass all of it. <a href="reference-architecture.html#why-gateway">Document 3</a></p></div></li>
+    <li><b>Why Spring Boot? Is it only because we have PCF?</b><div><p>Mostly yes, and that is a good reason. MCP is language-neutral. Spring Boot reuses our skills, pipeline, PCF buildpacks, Spring Security, Splunk and New Relic setup, and support model. Python or Node would work equally well technically but would be a new runtime to operate. <a href="reference-architecture.html#why-spring">Document 3</a></p></div></li>
+    <li><b>What is the enterprise standard for MCP?</b><div><p>The standard is the protocol (governed by the Agentic AI Foundation under the Linux Foundation) and its OAuth 2.1 authorization profile. The common enterprise pattern: remote servers over Streamable HTTP, owned by the domain team, behind the existing API gateway, authenticated with the corporate identity provider, with curated tools for important actions, catalogued and monitored. <a href="reference-architecture.html#standard">Document 3</a></p></div></li>
+    <li><b>We have APIs. What comes next?</b><div><p>Decide who agents act for and which AI hosts are approved; make API specs agent-ready; connect the MCP server to real APIs in a lower environment; add OAuth at Apigee and in the server; deploy on PCF behind an Apigee MCP proxy; pilot with real users; harden and launch; repeat for other products. <a href="roadmap.html#next">Document 4</a></p></div></li>
+  </ol>
+</section>
+
+<section id="picture">
+  <h2><span class="n">02</span>The whole picture</h2>
+  <figure>
+    <div class="frame">
+      <svg class="d" viewBox="0 0 820 230" style="min-width:700px" role="img" aria-label="Summary: an employee asks an AI assistant; the assistant gets a token from the corporate IdP; Apigee checks it; the Apply MCP server on PCF applies rules and calls the prequal APIs through Apigee with its own token." xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="wp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker></defs>
+        <rect x="10" y="60" width="100" height="60" rx="8" class="b"/><text x="60" y="86" class="t" text-anchor="middle">Employee</text><text x="60" y="104" class="s" text-anchor="middle">asks</text>
+        <rect x="140" y="60" width="120" height="60" rx="8" class="b"/><text x="200" y="86" class="t" text-anchor="middle">AI assistant</text><text x="200" y="104" class="s" text-anchor="middle">MCP client</text>
+        <rect x="140" y="160" width="120" height="54" rx="8" class="b-acc"/><text x="200" y="184" class="t" text-anchor="middle">Corporate IdP</text><text x="200" y="201" class="s" text-anchor="middle">token A</text>
+        <rect x="300" y="50" width="120" height="80" rx="8" class="b-acc"/><text x="360" y="78" class="t" text-anchor="middle">Apigee</text><text x="360" y="96" class="s" text-anchor="middle">check token,</text><text x="360" y="110" class="s" text-anchor="middle">scope per tool</text>
+        <rect x="460" y="50" width="140" height="80" rx="8" class="b-hi"/><text x="530" y="78" class="t" text-anchor="middle">Apply MCP server</text><text x="530" y="96" class="s" text-anchor="middle">PCF, Spring Boot</text><text x="530" y="110" class="s" text-anchor="middle">rules, translation</text>
+        <rect x="640" y="50" width="70" height="80" rx="8" class="b-acc"/><text x="675" y="86" class="t" text-anchor="middle">Apigee</text><text x="675" y="102" class="s" text-anchor="middle">token B</text>
+        <rect x="740" y="50" width="70" height="80" rx="8" class="b-api"/><text x="775" y="86" class="t" text-anchor="middle">Prequal</text><text x="775" y="102" class="s" text-anchor="middle">APIs</text>
+        <line x1="110" y1="90" x2="138" y2="90" class="e" marker-end="url(#wp)"/>
+        <line x1="200" y1="120" x2="200" y2="158" class="e-dash" marker-end="url(#wp)"/>
+        <line x1="260" y1="90" x2="298" y2="90" class="e" marker-end="url(#wp)"/>
+        <line x1="420" y1="90" x2="458" y2="90" class="e" marker-end="url(#wp)"/>
+        <line x1="600" y1="90" x2="638" y2="90" class="e" marker-end="url(#wp)"/>
+        <line x1="710" y1="90" x2="738" y2="90" class="e" marker-end="url(#wp)"/>
+        <text x="279" y="80" class="et" text-anchor="middle">MCP</text>
+        <text x="619" y="80" class="et" text-anchor="middle">REST</text>
+        <text x="530" y="160" class="s" text-anchor="middle">documents 1 and 3</text>
+        <text x="360" y="160" class="s" text-anchor="middle">document 2</text>
+      </svg>
+    </div>
+    <div class="legend"><span><i class="sw hi"></i>What we build</span><span><i class="sw acc"></i>Existing platforms, new configuration</span><span><i class="sw api"></i>Existing APIs, unchanged</span></div>
+  </figure>
+</section>
+
+<section id="read">
+  <h2><span class="n">03</span>Reading order</h2>
+  <div class="cards">
+    <a class="card" href="mcp-from-zero.html"><div class="e1">Document 1 · ~35 min</div><div class="t1">MCP from zero</div><p>How models use tools, the roles, the protocol, transports, the 2026 stateless change, confirmations (MRTR), tool design, SDKs, governance.</p><div class="go">Read →</div></a>
+    <a class="card" href="security-and-identity.html"><div class="e1">Document 2 · ~45 min</div><div class="t1">Agent security and identity</div><p>Who is identified, OAuth for agents, what the spec requires, employee and service flows, token exchange, enterprise-managed authorization, Apigee policies, threats.</p><div class="go">Read →</div></a>
+    <a class="card" href="reference-architecture.html"><div class="e1">Document 3 · ~40 min</div><div class="t1">Reference architecture</div><p>Why the gateway, why Spring Boot, enterprise patterns, target topology on Apigee and PCF, end-to-end request, scaling, environments, decisions.</p><div class="go">Read →</div></a>
+    <a class="card" href="roadmap.html"><div class="e1">Document 4 · ~35 min</div><div class="t1">Roadmap and build guide</div><p>Phases from POC to production, owners, remaining code changes, checklists, risks, and a long FAQ.</p><div class="go">Read →</div></a>
+  </div>
+</section>
+
+<section id="decisions">
+  <h2><span class="n">04</span>Recommended decisions at a glance</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Topic</th><th>Recommendation</th></tr></thead>
+    <tbody>
+      <tr><td>APIs</td><td>Unchanged. Enrich their Swagger specs to agent-ready.</td></tr>
+      <tr><td>Tools</td><td>Curated Spring Boot MCP server for state-changing and regulated actions; generated read tools later (Apigee MCP preview).</td></tr>
+      <tr><td>Transport</td><td>Streamable HTTP, stateless mode, one <code>/mcp</code> endpoint.</td></tr>
+      <tr><td>Front door</td><td>Apigee north proxy; MCP PCF route internal only.</td></tr>
+      <tr><td>Authentication</td><td>OAuth 2.1 with the corporate IdP: SSO + PKCE for employees, client credentials + mTLS for agent platforms.</td></tr>
+      <tr><td>Authorization</td><td>Per-tool scopes enforced at Apigee (<code>Mcp-Name</code>) and in code; ownership checks on ids.</td></tr>
+      <tr><td>Downstream</td><td>Through Apigee with token exchange; service credentials until available. Never token passthrough.</td></tr>
+      <tr><td>Human control</td><td>Consent and confirmation enforced in code; MRTR confirmation when supported.</td></tr>
+      <tr><td>Operations</td><td>Splunk audit index, New Relic tracing, per-tool dashboards and alerts.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="status">
+  <h2><span class="n">05</span>Where we are today</h2>
+  <ul>
+    <li>Repository <code>apply-mcp-server</code>: Spring Boot 3.5 + Spring AI 1.1, three prequal tools, deterministic mock, real HTTP adapter behind a configuration switch, 30 tests, Copilot configuration.</li>
+    <li>Other documents in the repository's <code>docs/</code> folder: the project handbook (<code>index.html</code>), the Prequal MCP Field Guide (<code>field-guide.html</code>), and the machine-readable APIs briefing (<code>machine-readable-apis.html</code>).</li>
+    <li>Not yet done: real contract alignment, OAuth, deployment on PCF and Apigee, pilot. See document 4.</li>
+  </ul>
+</section>
+
+<section id="sources">
+  <h2><span class="n">06</span>Sources</h2>
+  <ul>
+    <li><a href="https://modelcontextprotocol.io/specification/2026-07-28/changelog">MCP specification 2026-07-28: key changes</a></li>
+    <li><a href="https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization">MCP specification 2026-07-28: authorization</a></li>
+    <li><a href="https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices">MCP security best practices</a></li>
+    <li><a href="https://blog.modelcontextprotocol.io/posts/2026-07-28/">MCP blog: the 2026-07-28 specification</a></li>
+    <li><a href="https://blog.modelcontextprotocol.io/posts/enterprise-managed-auth/">MCP blog: enterprise-managed authorization</a></li>
+    <li><a href="https://github.com/modelcontextprotocol/ext-auth">MCP authorization extensions repository</a></li>
+    <li><a href="https://docs.spring.io/spring-ai/reference/api/mcp/mcp-security.html">Spring AI: MCP security</a></li>
+    <li><a href="https://visualstudiomagazine.com/articles/2026/06/29/spring-ai-2-0-goes-ga-giving-java-developers-a-more-mature-ai-app-stack.aspx">Visual Studio Magazine: Spring AI 2.0 GA</a></li>
+    <li><a href="https://cloud.google.com/blog/products/ai-machine-learning/mcp-support-for-apigee">Google Cloud: MCP support for Apigee</a></li>
+    <li><a href="https://developer.konghq.com/plugins/ai-mcp-oauth2/">Kong: AI MCP OAuth2 plugin</a></li>
+    <li><a href="https://developer.konghq.com/plugins/ai-mcp-proxy/">Kong: AI MCP Proxy plugin</a></li>
+    <li><a href="https://www.rfc-editor.org/rfc/rfc9728">RFC 9728: OAuth Protected Resource Metadata</a> · <a href="https://www.rfc-editor.org/rfc/rfc8707">RFC 8707: Resource Indicators</a> · <a href="https://www.rfc-editor.org/rfc/rfc8693">RFC 8693: Token Exchange</a></li>
+  </ul>
+</section>
+<div class="pager"><a class="nx" href="mcp-from-zero.html"><div class="k">Next</div>1 · MCP from zero</a></div><footer>Apply MCP Library · prepared for the Apply API team · facts checked against the MCP specification 2026-07-28 and vendor documentation in October 2026.</footer></main></div>
+</body>
+</html>

@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP Roadmap and Build Guide</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"><style>/* Layout: multi-page engineering library. Library bar on top, sticky page contents on the left, one reading column; figures and tables scroll inside their own frames. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --sunken:#eef1f5; --line:#d6dbe4;
+  --fg:#1c2330; --muted:#566173; --accent:#003087; --accent-soft:#e3e9f5;
+  --hi:#ffc500; --hi-ink:#4a3a00; --hi-soft:#fff6d6;
+  --ok:#1f7a4d; --ok-soft:#e2f3ea; --warn:#9a5b00; --warn-soft:#fdf0dc; --bad:#b3261e; --bad-soft:#fbe5e3;
+  --code-bg:#0f1b33; --code-fg:#dfe6f3; --code-dim:#8fa0bf; --code-key:#ffd75e; --code-str:#9fd8b8;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body)}
+
+.libbar{border-bottom:1px solid var(--line);background:var(--surface)}
+.libbar .in{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:10px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}
+.libbar .brand{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-right:8px;text-decoration:none}
+.libbar a.pg{font-size:14px;color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.libbar a.pg:hover{color:var(--fg)}
+.libbar a.pg.on{color:var(--fg);border-bottom-color:var(--hi);font-weight:600}
+@media (max-width:640px){.libbar .in{padding-inline:16px}}
+
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:28px 80px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+@media (max-width:940px){.wrap{grid-template-columns:minmax(0,1fr);gap:22px;padding-inline:16px}}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;font-size:14px;max-height:calc(100vh - 40px);overflow:auto}
+nav.toc .lbl{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+nav.toc a{display:flex;gap:10px;padding:5px 10px;border-radius:6px;color:var(--muted);text-decoration:none;line-height:1.4}
+nav.toc a .n{font:500 12px/1.65 var(--mono);color:var(--muted);opacity:.6;flex:none}
+nav.toc a:hover{background:var(--accent-soft);color:var(--accent)}
+@media (max-width:940px){nav.toc{position:static;max-height:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+  nav.toc ol{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}}
+
+main{min-width:0;max-width:840px}
+header.page{padding-bottom:24px;border-bottom:1px solid var(--line)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font:650 clamp(30px,5vw,44px)/1.1 var(--display);margin:14px 0 12px;text-wrap:balance}
+.lede{font-size:18px;color:var(--muted);max-width:66ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{font:500 12px/1 var(--mono);padding:7px 10px;border-radius:999px;background:var(--sunken);color:var(--muted);border:1px solid var(--line)}
+
+section{padding-top:46px;scroll-margin-top:12px}
+h2{font:650 27px/1.2 var(--display);margin:0 0 8px;display:flex;gap:14px;align-items:baseline;text-wrap:balance}
+h2 .n{font:500 14px var(--mono);color:var(--accent);flex:none}
+h3{font:600 18px/1.35 var(--body);margin:28px 0 8px}
+h4{font:600 15px/1.4 var(--body);margin:20px 0 6px}
+p,li{max-width:70ch}
+p{margin:0 0 14px}
+ul,ol{padding-left:22px;margin:0 0 14px}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+strong{font-weight:600}
+.sub{color:var(--muted)}
+code{font:500 .87em var(--mono);background:var(--sunken);border:1px solid var(--line);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+
+.answer{background:var(--hi-soft);border:1px solid color-mix(in srgb,var(--hi) 55%,var(--line));border-left:6px solid var(--hi);border-radius:8px;padding:16px 20px;margin:18px 0}
+.answer .k{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--hi-ink);margin-bottom:8px}
+.answer p{font-size:17px;line-height:1.55}
+.answer p:last-child{margin:0}
+.callout{border-radius:8px;padding:14px 18px;margin:16px 0;font-size:15px}
+.callout.info{background:var(--accent-soft)} .callout.info b{color:var(--accent)}
+.callout.warn{background:var(--warn-soft)} .callout.warn b{color:var(--warn)}
+.callout.ok{background:var(--ok-soft)} .callout.ok b{color:var(--ok)}
+.callout.bad{background:var(--bad-soft)} .callout.bad b{color:var(--bad)}
+.callout p:last-child,.callout ul:last-child{margin-bottom:0}
+.analogy{border:1px dashed var(--line);border-radius:8px;padding:12px 16px;margin:16px 0;font-size:15px;background:var(--surface)}
+.analogy b{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+
+figure{margin:18px 0 22px}
+figure .frame{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:80ch}
+svg text{font-family:var(--body)}
+svg.d{width:100%;height:auto}
+.lane-box{fill:var(--sunken);stroke:var(--line)}
+.lane-hi{fill:var(--hi-soft);stroke:var(--hi)}
+.lane-ext{fill:var(--accent-soft);stroke:var(--accent)}
+.lane-t{font-size:12.5px;font-weight:600;fill:var(--fg)}
+.lane-s{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.life{stroke:var(--line);stroke-dasharray:4 4}
+.phase{fill:var(--accent-soft)}
+.phase-t{font-size:11.5px;font-weight:600;fill:var(--accent);font-family:var(--mono)}
+.msg-req{stroke:var(--fg);stroke-width:1.4}
+.msg-res{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 3}
+.msg-bad{stroke:var(--bad);stroke-width:1.4}
+.ah{fill:var(--fg)} .ah2{fill:var(--muted)} .ah3{fill:var(--bad)}
+.msg-t{font-size:11px;fill:var(--fg);font-family:var(--mono);paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
+.note-box{fill:var(--surface);stroke:var(--line)}
+.note-t{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.self{fill:none;stroke:var(--fg);stroke-width:1.3}
+.b{fill:var(--surface);stroke:var(--line)}
+.b-api{fill:var(--sunken);stroke:var(--muted)}
+.b-hi{fill:var(--hi-soft);stroke:var(--hi)}
+.b-acc{fill:var(--accent-soft);stroke:var(--accent)}
+.b-ok{fill:var(--ok-soft);stroke:var(--ok)}
+.b-bad{fill:var(--bad-soft);stroke:var(--bad)}
+.zone{fill:none;stroke:var(--line);stroke-dasharray:5 4}
+.zone-t{font-size:10.5px;fill:var(--muted);font-family:var(--mono);letter-spacing:.08em}
+.t{font-size:12.5px;font-weight:600;fill:var(--fg)}
+.s{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.e{stroke:var(--muted);stroke-width:1.4;fill:none}
+.e-acc{stroke:var(--accent);stroke-width:1.6;fill:none}
+.e-dash{stroke:var(--muted);stroke-width:1.2;fill:none;stroke-dasharray:4 4}
+.e-bad{stroke:var(--bad);stroke-width:1.4;fill:none;stroke-dasharray:5 3}
+.et{font-size:10.5px;fill:var(--muted);font-family:var(--mono);paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;border:1px solid;display:inline-block}
+.sw.hi{background:var(--hi-soft);border-color:var(--hi)}
+.sw.acc{background:var(--accent-soft);border-color:var(--accent)}
+.sw.api{background:var(--sunken);border-color:var(--muted)}
+.sw.ext{background:var(--surface);border-color:var(--line)}
+
+.tbl{overflow-x:auto;margin:14px 0 18px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px/1.3 var(--body);color:var(--muted);background:var(--sunken)}
+tr:last-child td{border-bottom:0}
+tr.grp td{background:var(--sunken);font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 12px}
+tr.pick td{background:var(--hi-soft)}
+td.y{color:var(--ok);font-weight:600} td.n{color:var(--bad);font-weight:600} td.m{color:var(--warn);font-weight:600}
+
+.code{margin:12px 0 18px;border-radius:8px;background:var(--code-bg);overflow:hidden;min-width:0}
+.code .bar{padding:7px 12px;border-bottom:1px solid #ffffff14;font:500 11px var(--mono);color:var(--code-dim);letter-spacing:.06em}
+pre{margin:0;padding:12px 16px;overflow-x:auto;font:400 12.5px/1.6 var(--mono);color:var(--code-fg)}
+pre .c{color:var(--code-dim)} pre .k{color:var(--code-key)} pre .s{color:var(--code-str)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.card .t1{font-weight:600;margin-bottom:2px}
+.card .e1{font:500 11.5px var(--mono);color:var(--accent);margin-bottom:6px}
+.card p{font-size:14px;color:var(--muted);margin:0}
+a.card{text-decoration:none;color:inherit;display:block}
+a.card:hover{border-color:var(--accent)}
+a.card .go{font:500 12px var(--mono);color:var(--accent);margin-top:10px}
+
+.steps{list-style:none;padding:0;display:grid;gap:8px;counter-reset:s}
+.steps>li{counter-increment:s;display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-width:none}
+.steps>li::before{content:counter(s);font:600 18px var(--mono);color:var(--accent)}
+.steps>li b{display:block}
+.steps>li span{color:var(--muted);font-size:14.5px;display:block}
+
+.qa{list-style:none;padding:0;counter-reset:q}
+.qa>li{counter-increment:q;position:relative;padding:14px 16px 14px 52px;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:10px;max-width:none}
+.qa>li::before{content:"Q" counter(q);position:absolute;left:14px;top:15px;font:600 12px var(--mono);color:var(--accent)}
+.qa>li>b{display:block;margin-bottom:4px}
+.qa>li>div{color:var(--fg);font-size:15px}
+.qa>li>div p{margin-bottom:8px}
+
+.check{list-style:none;padding:0;columns:2;column-gap:28px}
+@media (max-width:700px){.check{columns:1}}
+.check li{break-inside:avoid;padding-left:26px;position:relative;font-size:15px}
+.check li::before{content:"";position:absolute;left:0;top:5px;width:14px;height:14px;border:1.5px solid var(--muted);border-radius:3px}
+
+.phases{display:grid;gap:10px;margin:16px 0}
+.ph{display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+@media (max-width:600px){.ph{grid-template-columns:minmax(0,1fr);gap:6px}}
+.ph .w{font:600 12px var(--mono);color:var(--accent)}
+.ph .w span{display:block;font-weight:400;color:var(--muted);margin-top:4px}
+.ph .t1{font-weight:600;margin-bottom:4px}
+.ph ul{margin:6px 0 0;font-size:14.5px}
+.ph .exit{margin-top:8px;font-size:14px;background:var(--ok-soft);border-radius:6px;padding:8px 10px}
+.ph .exit b{color:var(--ok)}
+.ph.now{border-color:var(--hi);background:var(--hi-soft)}
+
+.layers{display:grid;gap:6px;margin:16px 0}
+.layer{display:grid;grid-template-columns:44px 170px minmax(0,1fr);gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+@media (max-width:640px){.layer{grid-template-columns:36px minmax(0,1fr)} .layer .d{grid-column:2}}
+.layer .no{font:600 16px var(--mono);color:var(--accent)}
+.layer .t1{font-weight:600}
+.layer .d{font-size:14.5px;color:var(--muted)}
+
+dl.gl{display:grid;grid-template-columns:190px minmax(0,1fr);gap:8px 18px;font-size:15px}
+dl.gl dt{font:500 14px var(--mono);color:var(--accent)}
+dl.gl dd{margin:0}
+@media (max-width:560px){dl.gl{grid-template-columns:minmax(0,1fr)} dl.gl dd{margin-bottom:8px}}
+
+.pager{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:56px}
+.pager a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px;text-decoration:none;color:var(--fg)}
+.pager a:hover{border-color:var(--accent)}
+.pager .k{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pager .nx{text-align:right;grid-column:2}
+footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="libbar"><div class="in"><a class="brand" href="index.html">Apply MCP Library</a><a class="pg" href="index.html">Start here</a><a class="pg" href="mcp-from-zero.html">1 · MCP from zero</a><a class="pg" href="security-and-identity.html">2 · Security and identity</a><a class="pg" href="reference-architecture.html">3 · Reference architecture</a><a class="pg on" href="roadmap.html">4 · Roadmap and build guide</a></div></div><div class="wrap"><nav class="toc" aria-label="On this page"><div class="lbl">On this page</div><ol><li><a href="#next"><span class="n">01</span><span>Once we have APIs, what is next?</span></a></li><li><a href="#p1"><span class="n">02</span><span>Phase 1: decide and align</span></a></li><li><a href="#p2"><span class="n">03</span><span>Phase 2: contracts</span></a></li><li><a href="#p3"><span class="n">04</span><span>Phase 3: real backend in a lower environment</span></a></li><li><a href="#p4"><span class="n">05</span><span>Phase 4: security</span></a></li><li><a href="#p5"><span class="n">06</span><span>Phase 5: platform deployment</span></a></li><li><a href="#p6"><span class="n">07</span><span>Phase 6: pilot</span></a></li><li><a href="#p7"><span class="n">08</span><span>Phase 7: production readiness checklist</span></a></li><li><a href="#p8"><span class="n">09</span><span>Phase 8: scale out</span></a></li><li><a href="#raci"><span class="n">10</span><span>Who does what</span></a></li><li><a href="#code"><span class="n">11</span><span>Code changes still needed in the repository</span></a></li><li><a href="#dod"><span class="n">12</span><span>Definition of done for any new tool</span></a></li><li><a href="#risks"><span class="n">13</span><span>Risks</span></a></li><li><a href="#faq"><span class="n">14</span><span>Frequently asked questions</span></a></li><li><a href="#acronyms"><span class="n">15</span><span>Acronyms and standards</span></a></li></ol></nav><main><header class="page">
+  <div class="eyebrow">Document 4 of 4 · delivery</div>
+  <h1>Roadmap and build guide</h1>
+  <p class="lede">We have APIs, Swagger specs in Apigee, and a working MCP proof of concept with a mock backend. This document is the path from here to a production MCP service for Apply products: phases, owners, the code changes still needed, checklists, risks, and answers to the questions that will come up.</p>
+  <div class="meta"><span class="chip">Reading time ~35 min</span><span class="chip">From POC to production</span></div>
+</header>
+
+<section id="next">
+  <h2><span class="n">01</span>Once we have APIs, what is next?</h2>
+  <div class="answer"><div class="k">In one paragraph</div>
+    <p>Decide who the agents will act for and which data may flow to which AI applications. Make the API descriptions agent-ready. Connect the MCP server to the real APIs in a lower environment. Add OAuth at Apigee and in the server. Deploy it on PCF behind an Apigee MCP proxy. Pilot it with a small group of real users and measure. Then harden for production, launch, and repeat the pattern for the next Apply products.</p>
+  </div>
+  <div class="phases">
+    <div class="ph"><div class="w">Phase 0<span>done</span></div><div><div class="t1">Proof of concept</div>Three tools, mock backend, mock/real switch, 30 tests, documentation, Copilot connection.</div></div>
+    <div class="ph now"><div class="w">Phase 1<span>2 weeks</span></div><div><div class="t1">Decide and align</div>Answer the leadership questions; confirm identity provider capabilities; approve AI hosts and data classification; agree scopes and owners.</div></div>
+    <div class="ph"><div class="w">Phase 2<span>2–3 weeks</span></div><div><div class="t1">Contracts</div>Enrich the prequal Swagger spec to agent-ready; review tool contracts with business, compliance and a reviewer who does not know the API.</div></div>
+    <div class="ph"><div class="w">Phase 3<span>2–3 weeks</span></div><div><div class="t1">Real backend in lower environment</div>Align adapter with real contract; register MCP server as an Apigee app; run against SIT.</div></div>
+    <div class="ph"><div class="w">Phase 4<span>3–4 weeks</span></div><div><div class="t1">Security</div>OAuth at Apigee and server, protected resource metadata, per-tool scopes, ownership binding, audit events, token exchange or service credentials.</div></div>
+    <div class="ph"><div class="w">Phase 5<span>2–3 weeks</span></div><div><div class="t1">Platform deployment</div>PCF space, Apigee north proxy, stateless mode, observability, dashboards, alerts.</div></div>
+    <div class="ph"><div class="w">Phase 6<span>4 weeks</span></div><div><div class="t1">Pilot</div>Small group of real users in a controlled environment; conversation evaluations; measure accuracy and errors.</div></div>
+    <div class="ph"><div class="w">Phase 7<span>2–4 weeks</span></div><div><div class="t1">Production readiness and launch</div>Security review, performance test, runbooks, change approval, staged rollout.</div></div>
+    <div class="ph"><div class="w">Phase 8<span>ongoing</span></div><div><div class="t1">Scale</div>Next products, generated read tools, MRTR confirmations, enterprise-managed authorization, catalogue.</div></div>
+  </div>
+  <p class="sub">Durations are planning estimates for a small team and depend mostly on how quickly identity, security and compliance decisions are made. Phases 2, 3 and 4 can overlap.</p>
+</section>
+
+<section id="p1">
+  <h2><span class="n">02</span>Phase 1: decide and align</h2>
+  <p>Most delays in agent projects come from undecided questions, not from code. Settle these first.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Decision</th><th>Options</th><th>Owner</th><th>Why it matters</th></tr></thead>
+    <tbody>
+      <tr><td>Who is "anyone"?</td><td>Employees via AI assistants; internal agent platforms; external partners</td><td>Leadership</td><td>Sets the authentication model and review path</td></tr>
+      <tr><td>On whose behalf does the agent act?</td><td>Assisting an employee who serves an applicant; acting for the consumer directly</td><td>Leadership, compliance</td><td>Consent, disclosure and audit rules differ; consumer-direct is a much larger design</td></tr>
+      <tr><td>Which AI hosts are approved, for which data?</td><td>Copilot, Claude, internal platforms</td><td>InfoSec</td><td>Decides whether applicant PII may flow through each host</td></tr>
+      <tr><td>Required disclosures</td><td>Soft inquiry, offer terms, acceptance</td><td>Compliance</td><td>May need exact text as MCP resources or MRTR prompts</td></tr>
+      <tr><td>Identity provider capabilities</td><td>Audience, token exchange, ID-JAG</td><td>Identity team</td><td>Decides flows in document 2</td></tr>
+      <tr><td>Scopes and groups</td><td><code>prequal.check</code>, <code>application.read</code>, <code>prequal.accept</code></td><td>Business owner, identity team</td><td>Who may do what</td></tr>
+      <tr><td>Runtime</td><td>New PCF app behind Apigee (recommended)</td><td>Architecture</td><td>Deployment and support model</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="p2">
+  <h2><span class="n">03</span>Phase 2: contracts</h2>
+  <ul>
+    <li>Score the prequal, accept and status Swagger specs on the L0–L4 scale (see the machine-readable APIs briefing) and lift them to L3: explain every code, document errors and idempotency, add examples.</li>
+    <li>Freeze the three tool contracts: names, descriptions, input schemas, outputs, error messages, retry rules.</li>
+    <li>Review with compliance: wording of consent requests and the explanation of decisions.</li>
+    <li>Write the conversation evaluation set (at least 20 scripted conversations including misuse attempts).</li>
+  </ul>
+  <div class="callout info"><p><b>Exit:</b> signed-off tool contracts, agent-ready specs, evaluation set in the repository.</p></div>
+</section>
+
+<section id="p3">
+  <h2><span class="n">04</span>Phase 3: real backend in a lower environment</h2>
+  <ol>
+    <li>Align <code>PrequalApi</code> records with the real request and response JSON.</li>
+    <li>Set real paths, headers and error parsing in <code>HttpPrequalBackend</code>.</li>
+    <li>Replace the illustrative code tables in <code>PrequalMapper</code> with the real decision, status and error codes.</li>
+    <li>Register the MCP server as a developer app in Apigee for SIT; obtain client credentials; store them in a PCF service binding or vault.</li>
+    <li>Run the adapter tests with masked real samples; run the protocol tests against SIT.</li>
+  </ol>
+  <div class="callout info"><p><b>Exit:</b> every decision path reproduced in SIT through the MCP tools, visible in Apigee analytics and Splunk.</p></div>
+</section>
+
+<section id="p4">
+  <h2><span class="n">05</span>Phase 4: security</h2>
+  <ul>
+    <li>Apigee north proxy: protected resource metadata, 401 challenge, VerifyJWT against the IdP, per-tool scope policy on <code>Mcp-Name</code>, quotas.</li>
+    <li>MCP server: Spring Security resource server with audience validation; <code>@PreAuthorize</code> per tool; reject the mock in production.</li>
+    <li>Ownership binding: record the creating user and client for each <code>prequalId</code> and <code>applicationId</code>; check on every call.</li>
+    <li>Downstream: token exchange if the IdP supports it, otherwise service credentials plus asserted user id.</li>
+    <li>Audit events to a dedicated Splunk index.</li>
+    <li>Threat model walkthrough with InfoSec (document 2, section 13).</li>
+  </ul>
+  <div class="callout info"><p><b>Exit:</b> security tests pass for missing token, wrong audience, wrong scope, other user's id, missing consent, missing confirmation, duplicate acceptance.</p></div>
+</section>
+
+<section id="p5">
+  <h2><span class="n">06</span>Phase 5: platform deployment</h2>
+  <ul>
+    <li>PCF space and app with an internal-only route; at least two instances; Spring AI <code>STATELESS</code> protocol mode.</li>
+    <li>Apigee north proxy pointing at the internal route; environment-specific configuration.</li>
+    <li>New Relic APM and distributed tracing; Splunk log and audit indexes; dashboards and alerts.</li>
+    <li>CI/CD pipeline identical to the API services, including dependency scanning.</li>
+  </ul>
+</section>
+
+<section id="p6">
+  <h2><span class="n">07</span>Phase 6: pilot</h2>
+  <p>A pilot answers the question no unit test can: do real people, using a real AI assistant, get correct outcomes?</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Measure</th><th>Target to agree</th></tr></thead>
+    <tbody>
+      <tr><td>Correct tool chosen for the request</td><td>e.g. above 95%</td></tr>
+      <tr><td>Consent asked before every prequal</td><td>100% (also enforced in code)</td></tr>
+      <tr><td>Offers presented without invented terms</td><td>100% in reviewed samples</td></tr>
+      <tr><td>Duplicate applications</td><td>0</td></tr>
+      <tr><td>Tool errors by reason</td><td>Tracked; descriptions improved where errors cluster</td></tr>
+      <tr><td>User satisfaction and time saved</td><td>Compared with the current process</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="p7">
+  <h2><span class="n">08</span>Phase 7: production readiness checklist</h2>
+  <ul class="check">
+    <li>Security review approved</li>
+    <li>InfoSec approval of hosts and data flows</li>
+    <li>Compliance sign-off on consent and disclosures</li>
+    <li>Performance test at expected peak plus margin</li>
+    <li>Quotas and spike arrest tuned</li>
+    <li>Runbook: alerts, dashboards, common failures</li>
+    <li>On-call trained on MCP traffic</li>
+    <li>Rollback plan: disable tools by configuration</li>
+    <li>Kill switch: revoke client apps in Apigee or IdP</li>
+    <li>Audit retention configured</li>
+    <li>Production guard against mock backend</li>
+    <li>Conversation evaluation passing on the release build</li>
+    <li>Staged rollout plan by user group</li>
+    <li>Support contacts for identity and Apigee teams</li>
+  </ul>
+</section>
+
+<section id="p8">
+  <h2><span class="n">09</span>Phase 8: scale out</h2>
+  <ul>
+    <li><strong>Next products</strong>: Direct Apply, multi-product prequal, PayLater, following the same package pattern (backend, tool, tests).</li>
+    <li><strong>Generated read tools</strong>: Apigee MCP proxy for simple lookups once specs are agent-ready and the preview is available.</li>
+    <li><strong>MRTR confirmation</strong> for accept once the Java SDK and target hosts support the 2026-07-28 protocol.</li>
+    <li><strong>Enterprise-managed authorization</strong> if the identity provider supports ID-JAG.</li>
+    <li><strong>Catalogue</strong>: list approved tools in Apigee API hub or an internal registry.</li>
+    <li><strong>Resources</strong>: publish disclosures and product terms as MCP resources.</li>
+  </ul>
+</section>
+
+<section id="raci">
+  <h2><span class="n">10</span>Who does what</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Team</th><th>Responsibilities</th></tr></thead>
+    <tbody>
+      <tr><td>Apply API team</td><td>MCP server, tool contracts, adapter, tests, spec enrichment, runbooks</td></tr>
+      <tr><td>Apigee platform team</td><td>North MCP proxy, VerifyJWT, per-tool policy, quotas, developer apps, Apigee MCP preview evaluation</td></tr>
+      <tr><td>Identity team</td><td>Client registration, scopes, groups, token exchange, EMA evaluation</td></tr>
+      <tr><td>InfoSec</td><td>Approved hosts, data classification, threat model, security review</td></tr>
+      <tr><td>Compliance and legal</td><td>Consent and disclosure wording, audit requirements</td></tr>
+      <tr><td>PCF platform team</td><td>Space, routes, network policy, autoscaling</td></tr>
+      <tr><td>Observability team</td><td>Splunk indexes, New Relic dashboards, alerts</td></tr>
+      <tr><td>Business owner</td><td>Use cases, who gets which scopes, pilot users, success criteria</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="code">
+  <h2><span class="n">11</span>Code changes still needed in the repository</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Change</th><th>Where</th><th>Phase</th></tr></thead>
+    <tbody>
+      <tr><td>Align backend records, paths, headers, codes with the real contract</td><td><code>PrequalApi</code>, <code>HttpPrequalBackend</code>, <code>PrequalMapper</code></td><td>3</td></tr>
+      <tr><td>Add Spring Security OAuth2 resource server with audience check</td><td><code>pom.xml</code>, new <code>SecurityConfig</code></td><td>4</td></tr>
+      <tr><td>Per-tool authorization with <code>@PreAuthorize</code></td><td><code>PrequalTools</code></td><td>4</td></tr>
+      <tr><td>Ownership store and checks for <code>prequalId</code> and <code>applicationId</code></td><td>New component; Redis, GemFire or backend lookup</td><td>4</td></tr>
+      <tr><td>Structured audit events</td><td><code>traced()</code> helper</td><td>4</td></tr>
+      <tr><td>Token exchange client or service credentials</td><td><code>HttpPrequalBackend</code></td><td>4</td></tr>
+      <tr><td>Switch to <code>STATELESS</code> protocol mode</td><td><code>application.yml</code></td><td>5</td></tr>
+      <tr><td>Production guard against mock</td><td>Startup check on <code>prod</code> profile</td><td>5</td></tr>
+      <tr><td>Tool enable/disable by configuration</td><td>Conditional tool beans</td><td>5</td></tr>
+      <tr><td>Resilience: timeouts, circuit breaker on reads</td><td>Adapter</td><td>5</td></tr>
+      <tr><td>Conversation evaluation harness</td><td>New test module</td><td>2–6</td></tr>
+      <tr><td>Upgrade to Spring AI 2.0 / Spring Boot 4 when the platform supports it</td><td><code>pom.xml</code></td><td>8</td></tr>
+      <tr><td>Accept confirmation via MRTR instead of <code>applicantConfirmed</code></td><td><code>PrequalTools</code></td><td>8</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="dod">
+  <h2><span class="n">12</span>Definition of done for any new tool</h2>
+  <ul class="check">
+    <li>Business task named and owned</li>
+    <li>Underlying API spec at L3</li>
+    <li>Name follows <code>product_action</code></li>
+    <li>Description: what, when, prerequisites, next step, retry rule</li>
+    <li>Inputs flat with schema constraints</li>
+    <li>Results plain, minimal, with <code>nextStep</code>, no PII echo</li>
+    <li>Annotations set correctly</li>
+    <li>Scope assigned; enforced at Apigee and in code</li>
+    <li>Rules enforced in code and tested</li>
+    <li>Ownership check for any id it accepts</li>
+    <li>Idempotency for state changes</li>
+    <li>Audit event emitted</li>
+    <li>Unit, adapter, protocol tests</li>
+    <li>Conversation evaluations added</li>
+    <li>Documentation and README updated</li>
+    <li>Reviewed like an API contract change</li>
+  </ul>
+</section>
+
+<section id="risks">
+  <h2><span class="n">13</span>Risks</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Risk</th><th>Impact</th><th>Mitigation</th></tr></thead>
+    <tbody>
+      <tr><td>No approved AI host for applicant PII</td><td>Blocks production use with real data</td><td>Raise in phase 1; consider internal agent platform with approved model</td></tr>
+      <tr><td>IdP lacks audience or token exchange support</td><td>Weaker downstream identity</td><td>Service credentials plus asserted user; revisit</td></tr>
+      <tr><td>Apigee MCP preview not available to us</td><td>No generated tools</td><td>Curated server covers all needs; generated tools are optional</td></tr>
+      <tr><td>Java SDK lags new protocol</td><td>MRTR and new headers later</td><td>Keep <code>applicantConfirmed</code> rule; clients negotiate older version</td></tr>
+      <tr><td>Model misuses tools</td><td>Wrong outcomes</td><td>Rules in code; evaluations; pilot measurements; description tuning</td></tr>
+      <tr><td>Spring Boot 4 migration needed for Spring AI 2.0</td><td>Upgrade effort</td><td>Plan with platform roadmap; 1.1 line remains supported for now</td></tr>
+      <tr><td>Scope creep to consumer-direct agents</td><td>Large new security design</td><td>Treat as a separate initiative</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="faq">
+  <h2><span class="n">14</span>Frequently asked questions</h2>
+  <ol class="qa">
+    <li><b>Is MCP just a wrapper around our APIs?</b><div><p>Technically yes: a thin layer. Practically it is a new contract, written for a model rather than a developer, plus the safety rules that a model needs and a developer does not.</p></div></li>
+    <li><b>Can the agent call our APIs directly without MCP?</b><div><p>Some agent frameworks can call OpenAPI endpoints directly. You then lose the curated descriptions, the business rules, the PII trimming, and the standard way every AI host connects. MCP is the standard interface for agents; the APIs stay the interface for applications.</p></div></li>
+    <li><b>How do we authenticate the agent before it reaches the gateway?</b><div><p>The agent signs in with the corporate identity provider and gets a token before it calls us; Apigee validates the token as the first step on our side. Network rules can block unknown sources earlier. Details in document 2.</p></div></li>
+    <li><b>Why can't we use API keys like for partners?</b><div><p>An API key identifies an application, not the person using it, and cannot be scoped per user or expire quickly. MCP's standard is OAuth, which every MCP host supports. API keys are acceptable only for local testing.</p></div></li>
+    <li><b>Why Apigee in front if the MCP server already validates tokens?</b><div><p>Central policy, quotas, analytics and threat protection, plus the same approved pattern as every API. The server validates as well, so a bypassed gateway is still safe.</p></div></li>
+    <li><b>Why Spring Boot and not Python, which most MCP examples use?</b><div><p>Operations: our team, pipeline, PCF buildpacks, security libraries and monitoring are Java. The protocol is language-neutral, so the choice can change later without changing the tool contracts.</p></div></li>
+    <li><b>Does the 2026 protocol change break our design?</b><div><p>No. It removes sessions, and our tools never depended on them. It adds features we want (gateway headers, MRTR). We upgrade the SDK when it supports the new version.</p></div></li>
+    <li><b>Can Apigee replace the MCP server?</b><div><p>For simple read tools, possibly (Apigee MCP preview). Not for accept or anything that needs consent, confirmation or ownership checks.</p></div></li>
+    <li><b>What about Kong?</b><div><p>If production moves to Kong, it plays the same role as Apigee: front door, token validation (AI MCP OAuth2 plugin), per-tool access control, and optionally generated tools. The MCP server does not change.</p></div></li>
+    <li><b>How many tools can we expose?</b><div><p>There is no protocol limit, but model accuracy drops as similar tools multiply. Keep each agent's view to the tools it needs; prefer task-level tools.</p></div></li>
+    <li><b>What if the model invents an offer id?</b><div><p>The backend rejects unknown ids, the mapper tells the model to use exact ids, and the ownership check stops ids from other users.</p></div></li>
+    <li><b>What if the model retries accept with a new idempotency key?</b><div><p>The backend allows one acceptance per prequalification, so the second attempt is rejected with a clear message. The description and error texts also tell the model not to do it.</p></div></li>
+    <li><b>Where is the applicant's consent stored?</b><div><p>As a business record via the prequal API (consent flag and timestamp), plus the MCP audit event. Compliance decides the exact requirements.</p></div></li>
+    <li><b>Can customers use this directly through their own AI assistants?</b><div><p>Not in this design. Consumer-direct agents need customer authentication, fraud controls and different consent handling. Treat it as a separate initiative.</p></div></li>
+    <li><b>How do we test without an LLM?</b><div><p>MCP Inspector and the protocol tests exercise the server without any model. Copilot in IntelliJ provides a model for conversation testing.</p></div></li>
+    <li><b>Who owns the tool descriptions?</b><div><p>The Apply team, with review by business and compliance, under version control like an API contract.</p></div></li>
+  </ol>
+</section>
+
+<section id="acronyms">
+  <h2><span class="n">15</span>Acronyms and standards</h2>
+  <dl class="gl">
+    <dt>OAuth 2.1</dt><dd>Current consolidated version of OAuth 2.0; required by MCP authorization.</dd>
+    <dt>OIDC</dt><dd>OpenID Connect: identity layer on OAuth, used for SSO.</dd>
+    <dt>JWT</dt><dd>JSON Web Token: signed token format for access tokens.</dd>
+    <dt>JWKS</dt><dd>JSON Web Key Set: the IdP's public keys used to verify JWT signatures.</dd>
+    <dt>PKCE</dt><dd>Proof Key for Code Exchange: protects the login code from interception.</dd>
+    <dt>RFC 9728</dt><dd>OAuth Protected Resource Metadata: how our server says where to log in.</dd>
+    <dt>RFC 8707</dt><dd>Resource Indicators: tokens minted for one specific server.</dd>
+    <dt>RFC 8693</dt><dd>Token Exchange: swapping one token for another with a different audience.</dd>
+    <dt>RFC 9207</dt><dd>Issuer identification in authorization responses: prevents mix-up attacks.</dd>
+    <dt>CIMD</dt><dd>Client ID Metadata Document: a client identified by an HTTPS URL describing it.</dd>
+    <dt>DCR</dt><dd>Dynamic Client Registration: deprecated in MCP 2026-07-28.</dd>
+    <dt>ID-JAG</dt><dd>Identity Assertion JWT Authorization Grant: used by enterprise-managed authorization.</dd>
+    <dt>EMA</dt><dd>Enterprise-Managed Authorization: MCP extension for IdP-controlled access.</dd>
+    <dt>MRTR</dt><dd>Multi Round-Trip Request: server asks for input, client retries with answers.</dd>
+    <dt>mTLS</dt><dd>Mutual TLS: both sides present certificates.</dd>
+    <dt>PRM</dt><dd>Protected Resource Metadata (RFC 9728).</dd>
+  </dl>
+</section>
+<div class="pager"><a href="reference-architecture.html"><div class="k">Previous</div>3 · Reference architecture</a></div><footer>Apply MCP Library · prepared for the Apply API team · facts checked against the MCP specification 2026-07-28 and vendor documentation in October 2026.</footer></main></div>
+</body>
+</html>

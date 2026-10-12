@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP Reference Architecture</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"><style>/* Layout: multi-page engineering library. Library bar on top, sticky page contents on the left, one reading column; figures and tables scroll inside their own frames. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --sunken:#eef1f5; --line:#d6dbe4;
+  --fg:#1c2330; --muted:#566173; --accent:#003087; --accent-soft:#e3e9f5;
+  --hi:#ffc500; --hi-ink:#4a3a00; --hi-soft:#fff6d6;
+  --ok:#1f7a4d; --ok-soft:#e2f3ea; --warn:#9a5b00; --warn-soft:#fdf0dc; --bad:#b3261e; --bad-soft:#fbe5e3;
+  --code-bg:#0f1b33; --code-fg:#dfe6f3; --code-dim:#8fa0bf; --code-key:#ffd75e; --code-str:#9fd8b8;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body)}
+
+.libbar{border-bottom:1px solid var(--line);background:var(--surface)}
+.libbar .in{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:10px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}
+.libbar .brand{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-right:8px;text-decoration:none}
+.libbar a.pg{font-size:14px;color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.libbar a.pg:hover{color:var(--fg)}
+.libbar a.pg.on{color:var(--fg);border-bottom-color:var(--hi);font-weight:600}
+@media (max-width:640px){.libbar .in{padding-inline:16px}}
+
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:28px 80px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+@media (max-width:940px){.wrap{grid-template-columns:minmax(0,1fr);gap:22px;padding-inline:16px}}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;font-size:14px;max-height:calc(100vh - 40px);overflow:auto}
+nav.toc .lbl{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+nav.toc a{display:flex;gap:10px;padding:5px 10px;border-radius:6px;color:var(--muted);text-decoration:none;line-height:1.4}
+nav.toc a .n{font:500 12px/1.65 var(--mono);color:var(--muted);opacity:.6;flex:none}
+nav.toc a:hover{background:var(--accent-soft);color:var(--accent)}
+@media (max-width:940px){nav.toc{position:static;max-height:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+  nav.toc ol{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}}
+
+main{min-width:0;max-width:840px}
+header.page{padding-bottom:24px;border-bottom:1px solid var(--line)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font:650 clamp(30px,5vw,44px)/1.1 var(--display);margin:14px 0 12px;text-wrap:balance}
+.lede{font-size:18px;color:var(--muted);max-width:66ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{font:500 12px/1 var(--mono);padding:7px 10px;border-radius:999px;background:var(--sunken);color:var(--muted);border:1px solid var(--line)}
+
+section{padding-top:46px;scroll-margin-top:12px}
+h2{font:650 27px/1.2 var(--display);margin:0 0 8px;display:flex;gap:14px;align-items:baseline;text-wrap:balance}
+h2 .n{font:500 14px var(--mono);color:var(--accent);flex:none}
+h3{font:600 18px/1.35 var(--body);margin:28px 0 8px}
+h4{font:600 15px/1.4 var(--body);margin:20px 0 6px}
+p,li{max-width:70ch}
+p{margin:0 0 14px}
+ul,ol{padding-left:22px;margin:0 0 14px}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+strong{font-weight:600}
+.sub{color:var(--muted)}
+code{font:500 .87em var(--mono);background:var(--sunken);border:1px solid var(--line);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+
+.answer{background:var(--hi-soft);border:1px solid color-mix(in srgb,var(--hi) 55%,var(--line));border-left:6px solid var(--hi);border-radius:8px;padding:16px 20px;margin:18px 0}
+.answer .k{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--hi-ink);margin-bottom:8px}
+.answer p{font-size:17px;line-height:1.55}
+.answer p:last-child{margin:0}
+.callout{border-radius:8px;padding:14px 18px;margin:16px 0;font-size:15px}
+.callout.info{background:var(--accent-soft)} .callout.info b{color:var(--accent)}
+.callout.warn{background:var(--warn-soft)} .callout.warn b{color:var(--warn)}
+.callout.ok{background:var(--ok-soft)} .callout.ok b{color:var(--ok)}
+.callout.bad{background:var(--bad-soft)} .callout.bad b{color:var(--bad)}
+.callout p:last-child,.callout ul:last-child{margin-bottom:0}
+.analogy{border:1px dashed var(--line);border-radius:8px;padding:12px 16px;margin:16px 0;font-size:15px;background:var(--surface)}
+.analogy b{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+
+figure{margin:18px 0 22px}
+figure .frame{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:80ch}
+svg text{font-family:var(--body)}
+svg.d{width:100%;height:auto}
+.lane-box{fill:var(--sunken);stroke:var(--line)}
+.lane-hi{fill:var(--hi-soft);stroke:var(--hi)}
+.lane-ext{fill:var(--accent-soft);stroke:var(--accent)}
+.lane-t{font-size:12.5px;font-weight:600;fill:var(--fg)}
+.lane-s{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.life{stroke:var(--line);stroke-dasharray:4 4}
+.phase{fill:var(--accent-soft)}
+.phase-t{font-size:11.5px;font-weight:600;fill:var(--accent);font-family:var(--mono)}
+.msg-req{stroke:var(--fg);stroke-width:1.4}
+.msg-res{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 3}
+.msg-bad{stroke:var(--bad);stroke-width:1.4}
+.ah{fill:var(--fg)} .ah2{fill:var(--muted)} .ah3{fill:var(--bad)}
+.msg-t{font-size:11px;fill:var(--fg);font-family:var(--mono);paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
+.note-box{fill:var(--surface);stroke:var(--line)}
+.note-t{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.self{fill:none;stroke:var(--fg);stroke-width:1.3}
+.b{fill:var(--surface);stroke:var(--line)}
+.b-api{fill:var(--sunken);stroke:var(--muted)}
+.b-hi{fill:var(--hi-soft);stroke:var(--hi)}
+.b-acc{fill:var(--accent-soft);stroke:var(--accent)}
+.b-ok{fill:var(--ok-soft);stroke:var(--ok)}
+.b-bad{fill:var(--bad-soft);stroke:var(--bad)}
+.zone{fill:none;stroke:var(--line);stroke-dasharray:5 4}
+.zone-t{font-size:10.5px;fill:var(--muted);font-family:var(--mono);letter-spacing:.08em}
+.t{font-size:12.5px;font-weight:600;fill:var(--fg)}
+.s{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.e{stroke:var(--muted);stroke-width:1.4;fill:none}
+.e-acc{stroke:var(--accent);stroke-width:1.6;fill:none}
+.e-dash{stroke:var(--muted);stroke-width:1.2;fill:none;stroke-dasharray:4 4}
+.e-bad{stroke:var(--bad);stroke-width:1.4;fill:none;stroke-dasharray:5 3}
+.et{font-size:10.5px;fill:var(--muted);font-family:var(--mono);paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;border:1px solid;display:inline-block}
+.sw.hi{background:var(--hi-soft);border-color:var(--hi)}
+.sw.acc{background:var(--accent-soft);border-color:var(--accent)}
+.sw.api{background:var(--sunken);border-color:var(--muted)}
+.sw.ext{background:var(--surface);border-color:var(--line)}
+
+.tbl{overflow-x:auto;margin:14px 0 18px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px/1.3 var(--body);color:var(--muted);background:var(--sunken)}
+tr:last-child td{border-bottom:0}
+tr.grp td{background:var(--sunken);font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 12px}
+tr.pick td{background:var(--hi-soft)}
+td.y{color:var(--ok);font-weight:600} td.n{color:var(--bad);font-weight:600} td.m{color:var(--warn);font-weight:600}
+
+.code{margin:12px 0 18px;border-radius:8px;background:var(--code-bg);overflow:hidden;min-width:0}
+.code .bar{padding:7px 12px;border-bottom:1px solid #ffffff14;font:500 11px var(--mono);color:var(--code-dim);letter-spacing:.06em}
+pre{margin:0;padding:12px 16px;overflow-x:auto;font:400 12.5px/1.6 var(--mono);color:var(--code-fg)}
+pre .c{color:var(--code-dim)} pre .k{color:var(--code-key)} pre .s{color:var(--code-str)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.card .t1{font-weight:600;margin-bottom:2px}
+.card .e1{font:500 11.5px var(--mono);color:var(--accent);margin-bottom:6px}
+.card p{font-size:14px;color:var(--muted);margin:0}
+a.card{text-decoration:none;color:inherit;display:block}
+a.card:hover{border-color:var(--accent)}
+a.card .go{font:500 12px var(--mono);color:var(--accent);margin-top:10px}
+
+.steps{list-style:none;padding:0;display:grid;gap:8px;counter-reset:s}
+.steps>li{counter-increment:s;display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-width:none}
+.steps>li::before{content:counter(s);font:600 18px var(--mono);color:var(--accent)}
+.steps>li b{display:block}
+.steps>li span{color:var(--muted);font-size:14.5px;display:block}
+
+.qa{list-style:none;padding:0;counter-reset:q}
+.qa>li{counter-increment:q;position:relative;padding:14px 16px 14px 52px;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:10px;max-width:none}
+.qa>li::before{content:"Q" counter(q);position:absolute;left:14px;top:15px;font:600 12px var(--mono);color:var(--accent)}
+.qa>li>b{display:block;margin-bottom:4px}
+.qa>li>div{color:var(--fg);font-size:15px}
+.qa>li>div p{margin-bottom:8px}
+
+.check{list-style:none;padding:0;columns:2;column-gap:28px}
+@media (max-width:700px){.check{columns:1}}
+.check li{break-inside:avoid;padding-left:26px;position:relative;font-size:15px}
+.check li::before{content:"";position:absolute;left:0;top:5px;width:14px;height:14px;border:1.5px solid var(--muted);border-radius:3px}
+
+.phases{display:grid;gap:10px;margin:16px 0}
+.ph{display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+@media (max-width:600px){.ph{grid-template-columns:minmax(0,1fr);gap:6px}}
+.ph .w{font:600 12px var(--mono);color:var(--accent)}
+.ph .w span{display:block;font-weight:400;color:var(--muted);margin-top:4px}
+.ph .t1{font-weight:600;margin-bottom:4px}
+.ph ul{margin:6px 0 0;font-size:14.5px}
+.ph .exit{margin-top:8px;font-size:14px;background:var(--ok-soft);border-radius:6px;padding:8px 10px}
+.ph .exit b{color:var(--ok)}
+.ph.now{border-color:var(--hi);background:var(--hi-soft)}
+
+.layers{display:grid;gap:6px;margin:16px 0}
+.layer{display:grid;grid-template-columns:44px 170px minmax(0,1fr);gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+@media (max-width:640px){.layer{grid-template-columns:36px minmax(0,1fr)} .layer .d{grid-column:2}}
+.layer .no{font:600 16px var(--mono);color:var(--accent)}
+.layer .t1{font-weight:600}
+.layer .d{font-size:14.5px;color:var(--muted)}
+
+dl.gl{display:grid;grid-template-columns:190px minmax(0,1fr);gap:8px 18px;font-size:15px}
+dl.gl dt{font:500 14px var(--mono);color:var(--accent)}
+dl.gl dd{margin:0}
+@media (max-width:560px){dl.gl{grid-template-columns:minmax(0,1fr)} dl.gl dd{margin-bottom:8px}}
+
+.pager{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:56px}
+.pager a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px;text-decoration:none;color:var(--fg)}
+.pager a:hover{border-color:var(--accent)}
+.pager .k{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pager .nx{text-align:right;grid-column:2}
+footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="libbar"><div class="in"><a class="brand" href="index.html">Apply MCP Library</a><a class="pg" href="index.html">Start here</a><a class="pg" href="mcp-from-zero.html">1 · MCP from zero</a><a class="pg" href="security-and-identity.html">2 · Security and identity</a><a class="pg on" href="reference-architecture.html">3 · Reference architecture</a><a class="pg" href="roadmap.html">4 · Roadmap and build guide</a></div></div><div class="wrap"><nav class="toc" aria-label="On this page"><div class="lbl">On this page</div><ol><li><a href="#answers"><span class="n">01</span><span>Short answers</span></a></li><li><a href="#today"><span class="n">02</span><span>What we have today</span></a></li><li><a href="#why-gateway"><span class="n">03</span><span>Why not expose the MCP server directly on PCF</span></a></li><li><a href="#target"><span class="n">04</span><span>Target architecture</span></a></li><li><a href="#e2e"><span class="n">05</span><span>One request, end to end</span></a></li><li><a href="#why-spring"><span class="n">06</span><span>Why Spring Boot on PCF</span></a></li><li><a href="#standard"><span class="n">07</span><span>What "enterprise standard" means for MCP</span></a></li><li><a href="#options"><span class="n">08</span><span>Implementation options compared</span></a></li><li><a href="#inside"><span class="n">09</span><span>Inside the MCP server</span></a></li><li><a href="#one-or-many"><span class="n">10</span><span>One MCP server or many?</span></a></li><li><a href="#envs"><span class="n">11</span><span>Environments and promotion</span></a></li><li><a href="#observe"><span class="n">12</span><span>Observability</span></a></li><li><a href="#testing"><span class="n">13</span><span>Testing strategy</span></a></li><li><a href="#adr"><span class="n">14</span><span>Architecture decisions</span></a></li></ol></nav><main><header class="page">
+  <div class="eyebrow">Document 3 of 4 · architecture</div>
+  <h1>MCP reference architecture</h1>
+  <p class="lede">How the Apply MCP server fits into the infrastructure we already run (Apigee, PCF, Spring Boot, Splunk, New Relic, corporate SSO), why each piece is there, and what the industry treats as the enterprise pattern for MCP.</p>
+  <div class="meta"><span class="chip">Reading time ~40 min</span><span class="chip">Apigee · PCF · Spring Boot</span></div>
+</header>
+
+<section id="answers">
+  <h2><span class="n">01</span>Short answers</h2>
+  <div class="answer"><div class="k">Why Apigee and not the PCF route directly?</div>
+    <p>A PCF route only delivers traffic. Apigee is where we decide who may call, how often, and with what credentials, and where we see and audit the traffic. An MCP server reachable directly on its PCF route would bypass every control we apply to our APIs today. The rule stays the same as for APIs: nothing customer-facing or agent-facing is reachable except through the gateway.</p>
+  </div>
+  <div class="answer"><div class="k">Why Spring Boot?</div>
+    <p>Not because MCP requires Java; MCP is language-neutral. We chose Spring Boot because the team, the PCF platform, the build pipeline, the security libraries, the observability agents and the production support model already exist for it. A Python or Node service would be just as valid technically, but would be the first of its kind for the team to run in production.</p>
+  </div>
+  <div class="answer"><div class="k">What is the enterprise standard for MCP?</div>
+    <p>The standard is the protocol itself (MCP, now governed by the Agentic AI Foundation under the Linux Foundation) with its OAuth 2.1 authorization profile. There is no mandated product. The pattern enterprises have converged on is: remote MCP servers over Streamable HTTP, owned by the domain team, behind the existing API gateway, authenticated by the corporate identity provider, listed in a catalogue, and monitored like any other service.</p>
+  </div>
+</section>
+
+<section id="today">
+  <h2><span class="n">02</span>What we have today</h2>
+  <figure>
+    <div class="frame">
+      <svg class="d" viewBox="0 0 800 250" style="min-width:660px" role="img" aria-label="Today: web, mobile and partner channels call Apigee proxies, which route to Spring Boot APIs on PCF, which call downstream decision systems; logs go to Splunk and New Relic." xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="td" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker></defs>
+        <rect x="14" y="40" width="140" height="40" rx="6" class="b"/><text x="84" y="65" class="t" text-anchor="middle">Web channel</text>
+        <rect x="14" y="96" width="140" height="40" rx="6" class="b"/><text x="84" y="121" class="t" text-anchor="middle">Mobile app</text>
+        <rect x="14" y="152" width="140" height="40" rx="6" class="b"/><text x="84" y="177" class="t" text-anchor="middle">Partners</text>
+        <rect x="210" y="70" width="140" height="96" rx="8" class="b-acc"/>
+        <text x="280" y="102" class="t" text-anchor="middle">Apigee</text>
+        <text x="280" y="120" class="s" text-anchor="middle">proxies, keys/OAuth</text>
+        <text x="280" y="134" class="s" text-anchor="middle">quotas, analytics</text>
+        <text x="280" y="148" class="s" text-anchor="middle">Swagger specs</text>
+        <rect x="400" y="30" width="250" height="176" rx="10" class="zone"/>
+        <text x="414" y="48" class="zone-t">PCF</text>
+        <rect x="420" y="60" width="210" height="40" rx="6" class="b-api"/><text x="525" y="85" class="t" text-anchor="middle">Prequal API (Spring Boot)</text>
+        <rect x="420" y="110" width="210" height="40" rx="6" class="b-api"/><text x="525" y="135" class="t" text-anchor="middle">Accept / Apply API</text>
+        <rect x="420" y="160" width="210" height="40" rx="6" class="b-api"/><text x="525" y="185" class="t" text-anchor="middle">Status API</text>
+        <rect x="690" y="90" width="100" height="56" rx="6" class="b"/><text x="740" y="114" class="t" text-anchor="middle">Decision</text><text x="740" y="130" class="s" text-anchor="middle">systems</text>
+        <rect x="400" y="218" width="250" height="26" rx="6" class="b"/><text x="525" y="236" class="s" text-anchor="middle">Splunk · New Relic · CI/CD</text>
+        <line x1="154" y1="60" x2="208" y2="100" class="e" marker-end="url(#td)"/>
+        <line x1="154" y1="116" x2="208" y2="118" class="e" marker-end="url(#td)"/>
+        <line x1="154" y1="172" x2="208" y2="140" class="e" marker-end="url(#td)"/>
+        <line x1="350" y1="100" x2="418" y2="80" class="e" marker-end="url(#td)"/>
+        <line x1="350" y1="118" x2="418" y2="130" class="e" marker-end="url(#td)"/>
+        <line x1="350" y1="136" x2="418" y2="180" class="e" marker-end="url(#td)"/>
+        <line x1="630" y1="118" x2="688" y2="118" class="e" marker-end="url(#td)"/>
+      </svg>
+    </div>
+    <figcaption>Every consumer already goes through Apigee. AI agents are one more consumer type. The architecture question is only what sits between Apigee and the APIs for them.</figcaption>
+  </figure>
+</section>
+
+<section id="why-gateway">
+  <h2><span class="n">03</span>Why not expose the MCP server directly on PCF</h2>
+  <p>A PCF route (for example <code>apply-mcp.apps.internal…</code>) is a hostname the PCF router forwards to our application instances. It does TLS and load balancing. It does nothing else. Compare what Apigee adds:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Concern</th><th>PCF route only</th><th>Through Apigee</th></tr></thead>
+    <tbody>
+      <tr><td>Who may call</td><td>Anyone who can reach the route</td><td>Only registered apps with a valid token for this resource</td></tr>
+      <tr><td>Token validation</td><td>Must be coded into every service</td><td>Central policy, same as all APIs; the service re-checks</td></tr>
+      <tr><td>Per-tool permissions</td><td>Code only</td><td>Policy on <code>Mcp-Name</code> plus code</td></tr>
+      <tr><td>Rate limits, spike arrest</td><td>None</td><td>Per app, per tool</td></tr>
+      <tr><td>Analytics: who called what, how often</td><td>Application logs only</td><td>Standard Apigee analytics alongside all other API traffic</td></tr>
+      <tr><td>Threat protection (payload size, JSON threats)</td><td>None</td><td>Standard policies</td></tr>
+      <tr><td>Stable public URL and versioning</td><td>Tied to PCF space and app names</td><td>Stable proxy URL; backend can move</td></tr>
+      <tr><td>Consistency with security review</td><td>New exception to justify</td><td>Same pattern InfoSec already approved</td></tr>
+      <tr><td>Future gateway features</td><td>None</td><td>Apigee MCP proxy (preview), API hub catalogue</td></tr>
+    </tbody>
+  </table></div>
+  <figure>
+    <div class="frame">
+      <svg class="d" viewBox="0 0 800 220" style="min-width:640px" role="img" aria-label="Comparison: left, an agent reaching the MCP server's PCF route directly with no controls; right, the agent reaching Apigee first, which applies authentication, per-tool policy and quotas before the PCF route." xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="dg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker>
+        <marker id="dg2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah3"/></marker></defs>
+        <text x="20" y="22" class="zone-t">DIRECT (NOT ALLOWED)</text>
+        <rect x="20" y="40" width="110" height="50" rx="6" class="b"/><text x="75" y="70" class="t" text-anchor="middle">Any agent</text>
+        <rect x="20" y="120" width="110" height="50" rx="6" class="b-bad"/><text x="75" y="144" class="t" text-anchor="middle">Unknown</text><text x="75" y="160" class="s" text-anchor="middle">client</text>
+        <rect x="230" y="80" width="140" height="56" rx="8" class="b-hi"/><text x="300" y="104" class="t" text-anchor="middle">MCP server</text><text x="300" y="122" class="s" text-anchor="middle">PCF route</text>
+        <line x1="130" y1="65" x2="228" y2="98" class="e" marker-end="url(#dg)"/>
+        <line x1="130" y1="145" x2="228" y2="120" class="e-bad" marker-end="url(#dg2)"/>
+        <text x="180" y="190" class="s" text-anchor="middle">no auth, no quota, no analytics</text>
+        <line x1="400" y1="20" x2="400" y2="210" class="zone"/>
+        <text x="420" y="22" class="zone-t">THROUGH APIGEE (TARGET)</text>
+        <rect x="420" y="40" width="100" height="50" rx="6" class="b"/><text x="470" y="70" class="t" text-anchor="middle">Approved</text>
+        <rect x="420" y="120" width="100" height="50" rx="6" class="b-bad"/><text x="470" y="144" class="t" text-anchor="middle">Unknown</text><text x="470" y="160" class="s" text-anchor="middle">client</text>
+        <rect x="560" y="60" width="110" height="96" rx="8" class="b-acc"/><text x="615" y="86" class="t" text-anchor="middle">Apigee</text><text x="615" y="104" class="s" text-anchor="middle">token, scope</text><text x="615" y="118" class="s" text-anchor="middle">per tool, quota</text><text x="615" y="132" class="s" text-anchor="middle">analytics</text>
+        <rect x="700" y="80" width="90" height="56" rx="8" class="b-hi"/><text x="745" y="104" class="t" text-anchor="middle">MCP</text><text x="745" y="120" class="s" text-anchor="middle">server</text>
+        <line x1="520" y1="65" x2="558" y2="90" class="e" marker-end="url(#dg)"/>
+        <line x1="520" y1="145" x2="558" y2="130" class="e-bad" marker-end="url(#dg2)"/>
+        <text x="540" y="190" class="s" text-anchor="middle">401 / 403</text>
+        <line x1="670" y1="108" x2="698" y2="108" class="e" marker-end="url(#dg)"/>
+      </svg>
+    </div>
+    <figcaption>To make the direct path impossible, the MCP server's PCF route is internal only (or protected by a network policy) and the server rejects requests without a valid token.</figcaption>
+  </figure>
+  <h3>And on the way out: MCP server to the prequal APIs</h3>
+  <p>The MCP server is a new consumer of the prequal APIs. Two ways to reach them:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Path</th><th>Pros</th><th>Cons</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>Through Apigee (as a registered app)</strong></td><td>Same as every other consumer; same analytics, quotas, credentials; API teams see agent traffic separately</td><td>One extra network hop (small)</td></tr>
+      <tr><td>Direct PCF container-to-container</td><td>Lowest latency</td><td>Bypasses API policies and analytics; needs network policy approval; agent traffic invisible to API owners</td></tr>
+    </tbody>
+  </table></div>
+  <p>Recommendation: go through Apigee. It keeps agent traffic visible to the API owners and requires no new trust model.</p>
+</section>
+
+<section id="target">
+  <h2><span class="n">04</span>Target architecture</h2>
+  <figure>
+    <div class="frame">
+      <svg class="d" viewBox="0 0 820 420" style="min-width:700px" role="img" aria-label="Target architecture: AI clients obtain tokens from the corporate IdP and call the Apigee MCP proxy, which forwards to stateless MCP server instances on PCF; the server exchanges tokens and calls the prequal APIs through internal Apigee proxies; observability flows to Splunk and New Relic." xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="ta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker></defs>
+        <text x="16" y="22" class="zone-t">CLIENTS</text>
+        <rect x="16" y="34" width="150" height="46" rx="6" class="b"/><text x="91" y="54" class="t" text-anchor="middle">Copilot / Claude</text><text x="91" y="70" class="s" text-anchor="middle">employee SSO</text>
+        <rect x="16" y="92" width="150" height="46" rx="6" class="b"/><text x="91" y="112" class="t" text-anchor="middle">Agent platform</text><text x="91" y="128" class="s" text-anchor="middle">service, mTLS</text>
+        <rect x="16" y="150" width="150" height="46" rx="6" class="b"/><text x="91" y="170" class="t" text-anchor="middle">Dev / test tools</text><text x="91" y="186" class="s" text-anchor="middle">lower envs only</text>
+        <rect x="16" y="300" width="150" height="70" rx="8" class="b-acc"/><text x="91" y="326" class="t" text-anchor="middle">Corporate IdP</text><text x="91" y="344" class="s" text-anchor="middle">SSO, tokens,</text><text x="91" y="358" class="s" text-anchor="middle">token exchange</text>
+        <rect x="200" y="30" width="150" height="190" rx="10" class="zone"/>
+        <text x="212" y="48" class="zone-t">EDGE</text>
+        <rect x="212" y="58" width="126" height="40" rx="6" class="b"/><text x="275" y="83" class="t" text-anchor="middle">WAF / LB</text>
+        <rect x="212" y="110" width="126" height="100" rx="8" class="b-acc"/>
+        <text x="275" y="134" class="t" text-anchor="middle">Apigee</text>
+        <text x="275" y="150" class="s" text-anchor="middle">/mcp proxy</text>
+        <text x="275" y="166" class="s" text-anchor="middle">PRM, VerifyJWT</text>
+        <text x="275" y="180" class="s" text-anchor="middle">Mcp-Name policy</text>
+        <text x="275" y="194" class="s" text-anchor="middle">quota, analytics</text>
+        <rect x="390" y="30" width="190" height="240" rx="10" class="zone"/>
+        <text x="402" y="48" class="zone-t">PCF · apply-mcp space</text>
+        <rect x="404" y="60" width="162" height="50" rx="6" class="b-hi"/><text x="485" y="82" class="t" text-anchor="middle">MCP server #1</text><text x="485" y="98" class="s" text-anchor="middle">stateless</text>
+        <rect x="404" y="120" width="162" height="50" rx="6" class="b-hi"/><text x="485" y="142" class="t" text-anchor="middle">MCP server #2</text><text x="485" y="158" class="s" text-anchor="middle">stateless</text>
+        <rect x="404" y="180" width="162" height="50" rx="6" class="b-hi"/><text x="485" y="202" class="t" text-anchor="middle">MCP server #n</text><text x="485" y="218" class="s" text-anchor="middle">scale out</text>
+        <text x="485" y="256" class="s" text-anchor="middle">internal route only</text>
+        <rect x="614" y="80" width="90" height="110" rx="8" class="b-acc"/><text x="659" y="122" class="t" text-anchor="middle">Apigee</text><text x="659" y="140" class="s" text-anchor="middle">internal</text><text x="659" y="154" class="s" text-anchor="middle">proxies</text>
+        <rect x="726" y="40" width="84" height="44" rx="6" class="b-api"/><text x="768" y="66" class="t" text-anchor="middle">Prequal</text>
+        <rect x="726" y="112" width="84" height="44" rx="6" class="b-api"/><text x="768" y="138" class="t" text-anchor="middle">Accept</text>
+        <rect x="726" y="184" width="84" height="44" rx="6" class="b-api"/><text x="768" y="210" class="t" text-anchor="middle">Status</text>
+        <rect x="390" y="300" width="420" height="70" rx="8" class="b"/>
+        <text x="600" y="324" class="t" text-anchor="middle">Observability</text>
+        <text x="600" y="342" class="s" text-anchor="middle">Splunk (logs, audit) · New Relic (APM, traces) · Apigee analytics</text>
+        <text x="600" y="358" class="s" text-anchor="middle">one correlation id / trace across all hops</text>
+        <line x1="166" y1="57" x2="210" y2="70" class="e" marker-end="url(#ta)"/>
+        <line x1="166" y1="115" x2="210" y2="80" class="e" marker-end="url(#ta)"/>
+        <line x1="166" y1="173" x2="210" y2="90" class="e" marker-end="url(#ta)"/>
+        <line x1="275" y1="98" x2="275" y2="108" class="e" marker-end="url(#ta)"/>
+        <line x1="338" y1="160" x2="402" y2="145" class="e" marker-end="url(#ta)"/>
+        <line x1="566" y1="135" x2="612" y2="135" class="e" marker-end="url(#ta)"/>
+        <line x1="704" y1="110" x2="724" y2="66" class="e" marker-end="url(#ta)"/>
+        <line x1="704" y1="135" x2="724" y2="134" class="e" marker-end="url(#ta)"/>
+        <line x1="704" y1="160" x2="724" y2="204" class="e" marker-end="url(#ta)"/>
+        <path d="M91 196 L91 298" class="e-dash" marker-end="url(#ta)"/>
+        <text x="100" y="250" class="et">tokens</text>
+        <path d="M404 240 C300 290 220 330 168 334" class="e-dash" marker-end="url(#ta)"/>
+        <text x="300" y="300" class="et" text-anchor="middle">token exchange</text>
+        <line x1="485" y1="270" x2="485" y2="298" class="e-dash"/>
+      </svg>
+    </div>
+    <div class="legend"><span><i class="sw hi"></i>New: Apply MCP server</span><span><i class="sw acc"></i>Existing platforms, new configuration</span><span><i class="sw api"></i>Existing APIs, unchanged</span></div>
+  </figure>
+  <h3>What is new and what is reused</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Component</th><th>New or existing</th><th>Work needed</th></tr></thead>
+    <tbody>
+      <tr><td>Apply MCP server (Spring Boot on PCF)</td><td>New</td><td>The repository we built, plus security and production hardening</td></tr>
+      <tr><td>Apigee north proxy <code>/mcp</code></td><td>New proxy on existing platform</td><td>Protected resource metadata, VerifyJWT, per-tool policy, quotas</td></tr>
+      <tr><td>Apigee internal proxies for prequal APIs</td><td>Existing</td><td>Register the MCP server as a developer app</td></tr>
+      <tr><td>Corporate IdP</td><td>Existing</td><td>Register AI clients, define scopes and groups, enable token exchange if available</td></tr>
+      <tr><td>Prequal, accept, status APIs</td><td>Existing</td><td>None (optionally enrich Swagger specs)</td></tr>
+      <tr><td>Splunk, New Relic</td><td>Existing</td><td>Dashboards and alerts for MCP traffic</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="e2e">
+  <h2><span class="n">05</span>One request, end to end</h2>
+  <figure><div class="frame"><svg class="d" viewBox="0 0 928 726" style="min-width:860px" role="img" aria-label="End-to-end production request: from the employee's question through Apigee, the MCP server, token exchange and the prequal API, and back" xmlns="http://www.w3.org/2000/svg"><defs><marker id="m7a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="m7b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker><marker id="m7c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah3"/></marker></defs><rect x="22.0" y="6" width="116" height="46" rx="6" class="lane-box"/><text x="80" y="26" class="lane-t" text-anchor="middle">Employee</text><text x="80" y="42" class="lane-s" text-anchor="middle"></text><line x1="80" y1="52" x2="80" y2="720" class="life"/><rect x="150.0" y="6" width="116" height="46" rx="6" class="lane-box"/><text x="208" y="26" class="lane-t" text-anchor="middle">AI assistant</text><text x="208" y="42" class="lane-s" text-anchor="middle">MCP client</text><line x1="208" y1="52" x2="208" y2="720" class="life"/><rect x="278.0" y="6" width="116" height="46" rx="6" class="lane-box lane-ext"/><text x="336" y="26" class="lane-t" text-anchor="middle">IdP</text><text x="336" y="42" class="lane-s" text-anchor="middle">SSO</text><line x1="336" y1="52" x2="336" y2="720" class="life"/><rect x="406.0" y="6" width="116" height="46" rx="6" class="lane-box lane-ext"/><text x="464" y="26" class="lane-t" text-anchor="middle">Apigee</text><text x="464" y="42" class="lane-s" text-anchor="middle">north: /mcp</text><line x1="464" y1="52" x2="464" y2="720" class="life"/><rect x="534.0" y="6" width="116" height="46" rx="6" class="lane-box lane-hi"/><text x="592" y="26" class="lane-t" text-anchor="middle">MCP server</text><text x="592" y="42" class="lane-s" text-anchor="middle">PCF app</text><line x1="592" y1="52" x2="592" y2="720" class="life"/><rect x="662.0" y="6" width="116" height="46" rx="6" class="lane-box lane-ext"/><text x="720" y="26" class="lane-t" text-anchor="middle">Apigee</text><text x="720" y="42" class="lane-s" text-anchor="middle">internal proxy</text><line x1="720" y1="52" x2="720" y2="720" class="life"/><rect x="790.0" y="6" width="116" height="46" rx="6" class="lane-box"/><text x="848" y="26" class="lane-t" text-anchor="middle">Prequal API</text><text x="848" y="42" class="lane-s" text-anchor="middle">PCF app</text><line x1="848" y1="52" x2="848" y2="720" class="life"/><rect x="6" y="86" width="916" height="20" rx="4" class="phase"/><text x="16" y="100" class="phase-t">Once per user (token cached and refreshed)</text><line x1="211" y1="142" x2="332" y2="142" class="msg-req" marker-end="url(#m7a)"/><text x="272.0" y="136" class="msg-t" text-anchor="middle">SSO + PKCE, resource=MCP server</text><line x1="333" y1="172" x2="212" y2="172" class="msg-res" marker-end="url(#m7b)"/><text x="272.0" y="166" class="msg-t" text-anchor="middle">token A (aud=MCP)</text><rect x="6" y="182" width="916" height="20" rx="4" class="phase"/><text x="16" y="196" class="phase-t">Each tool call</text><line x1="83" y1="238" x2="204" y2="238" class="msg-req" marker-end="url(#m7a)"/><text x="144.0" y="232" class="msg-t" text-anchor="middle">“do I prequalify?”</text><line x1="211" y1="268" x2="460" y2="268" class="msg-req" marker-end="url(#m7a)"/><text x="336.0" y="262" class="msg-t" text-anchor="middle">tools/call  Bearer A  Mcp-Name</text><path d="M464 290 h26 v16 h-24" class="self" marker-end="url(#m7a)"/><text x="496" y="302" class="msg-t">authN, authZ per tool, quota, WAF</text><line x1="467" y1="342" x2="588" y2="342" class="msg-req" marker-end="url(#m7a)"/><text x="528.0" y="336" class="msg-t" text-anchor="middle">forward</text><path d="M592 364 h-26 v16 h24" class="self" marker-end="url(#m7a)"/><text x="560" y="376" class="msg-t" text-anchor="end">validate, rules, map</text><line x1="589" y1="416" x2="340" y2="416" class="msg-req" marker-end="url(#m7a)"/><text x="464.0" y="410" class="msg-t" text-anchor="middle">exchange A → B</text><line x1="339" y1="446" x2="588" y2="446" class="msg-res" marker-end="url(#m7b)"/><text x="464.0" y="440" class="msg-t" text-anchor="middle">token B (aud=API)</text><line x1="595" y1="476" x2="716" y2="476" class="msg-req" marker-end="url(#m7a)"/><text x="656.0" y="470" class="msg-t" text-anchor="middle">POST /v1/prequal/offers  Bearer B</text><line x1="723" y1="506" x2="844" y2="506" class="msg-req" marker-end="url(#m7a)"/><text x="784.0" y="500" class="msg-t" text-anchor="middle">forward</text><line x1="845" y1="536" x2="724" y2="536" class="msg-res" marker-end="url(#m7b)"/><text x="784.0" y="530" class="msg-t" text-anchor="middle">200 A1</text><line x1="717" y1="566" x2="596" y2="566" class="msg-res" marker-end="url(#m7b)"/><text x="656.0" y="560" class="msg-t" text-anchor="middle">200</text><path d="M592 588 h-26 v16 h24" class="self" marker-end="url(#m7a)"/><text x="560" y="600" class="msg-t" text-anchor="end">translate, trim PII</text><line x1="589" y1="640" x2="468" y2="640" class="msg-res" marker-end="url(#m7b)"/><text x="528.0" y="634" class="msg-t" text-anchor="middle">QUALIFIED + nextStep</text><line x1="461" y1="670" x2="212" y2="670" class="msg-res" marker-end="url(#m7b)"/><text x="336.0" y="664" class="msg-t" text-anchor="middle">result</text><line x1="205" y1="700" x2="84" y2="700" class="msg-res" marker-end="url(#m7b)"/><text x="144.0" y="694" class="msg-t" text-anchor="middle">explains offers</text></svg></div>
+    <figcaption>Two tokens: A is addressed to the MCP server and never leaves it; B is addressed to the prequal API. If token exchange is not available yet, B is replaced by the MCP server's own Apigee credentials.</figcaption></figure>
+  <h3>Latency budget (suggested starting targets)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Hop</th><th>Typical</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Apigee north (policies)</td><td>10–30 ms</td><td>JWT verify uses cached JWKS</td></tr>
+      <tr><td>MCP server logic</td><td>&lt; 10 ms</td><td>Validation and mapping only</td></tr>
+      <tr><td>Token exchange</td><td>20–80 ms</td><td>Cache exchanged tokens per user until expiry</td></tr>
+      <tr><td>Apigee internal + prequal API</td><td>As today</td><td>Dominant cost; unchanged</td></tr>
+      <tr><td>Model thinking time in the host</td><td>Seconds</td><td>Far larger than all of the above; our latency is rarely the bottleneck</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="why-spring">
+  <h2><span class="n">06</span>Why Spring Boot on PCF</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Factor</th><th>Spring Boot (Java)</th><th>Python or Node</th></tr></thead>
+    <tbody>
+      <tr><td>Team skills</td><td class="y">Core skill across the Apply API teams</td><td class="m">Limited</td></tr>
+      <tr><td>PCF buildpack, pipeline, templates</td><td class="y">Existing, proven</td><td class="m">Possible, but new patterns to approve</td></tr>
+      <tr><td>Security libraries</td><td class="y">Spring Security OAuth2 resource server, method security</td><td class="y">Available</td></tr>
+      <tr><td>Observability</td><td class="y">Existing Splunk and New Relic setup, Actuator</td><td class="m">Agents exist; new dashboards and runbooks</td></tr>
+      <tr><td>MCP SDK maturity</td><td class="m">Good; Spring AI integrates the MCP Java SDK; new spec versions may arrive a little later than in Tier 1 SDKs</td><td class="y">Tier 1 SDKs get new spec features first</td></tr>
+      <tr><td>Production support</td><td class="y">Existing on-call knows it</td><td class="n">New runtime to support</td></tr>
+      <tr><td>Reuse of API code (models, clients, Swagger codegen)</td><td class="y">Direct</td><td class="m">Regenerate</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Conclusion:</strong> the deciding factors are operational, not technical. If the organisation later standardises agent services on another runtime, the tool contracts (names, descriptions, schemas) carry over unchanged; only the implementation moves.</p>
+  <p><strong>Version path:</strong> the proof of concept uses Spring Boot 3.5 with Spring AI 1.1. Spring AI 2.0 (June 2026) requires Spring Boot 4 and ships MCP Java SDK 2.0. Plan the production build on the Spring Boot version our platform supports, and check Java SDK support for the 2026-07-28 protocol before relying on MRTR or the new headers.</p>
+</section>
+
+<section id="standard">
+  <h2><span class="n">07</span>What "enterprise standard" means for MCP</h2>
+  <p>There is no certification or reference product called "enterprise MCP". What exists is an open protocol and a set of patterns that large organisations and vendors have converged on.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Pattern</th><th>What it means</th><th>Our position</th></tr></thead>
+    <tbody>
+      <tr><td>Open protocol</td><td>MCP specification, versioned, governed by the Agentic AI Foundation (Linux Foundation)</td><td class="y">Yes</td></tr>
+      <tr><td>Remote servers over Streamable HTTP</td><td>No stdio servers for shared business capabilities</td><td class="y">Yes</td></tr>
+      <tr><td>Domain-owned servers</td><td>The team owning the APIs owns the MCP server and tool contracts</td><td class="y">Apply team</td></tr>
+      <tr><td>Curated, task-level tools</td><td>Hand-designed tools for important actions; generated tools for simple reads</td><td class="y">Hybrid</td></tr>
+      <tr><td>Gateway in front</td><td>Existing API gateway extended for MCP (Apigee, Kong and others have added MCP features)</td><td class="y">Apigee</td></tr>
+      <tr><td>Corporate identity</td><td>OAuth 2.1 with the workforce IdP; enterprise-managed authorization where supported</td><td class="m">To configure</td></tr>
+      <tr><td>Least privilege and human confirmation</td><td>Per-tool scopes; confirmations for destructive actions</td><td class="y">Designed in</td></tr>
+      <tr><td>Catalogue / registry</td><td>Approved servers and tools listed centrally (for example Apigee API hub)</td><td class="m">Later</td></tr>
+      <tr><td>Observability</td><td>OpenTelemetry tracing, audit per tool call</td><td class="m">To configure</td></tr>
+      <tr><td>Approved hosts</td><td>InfoSec decides which AI applications may connect, for which data</td><td class="m">Open question</td></tr>
+      <tr><td>Tool governance</td><td>Review of tool descriptions and changes like API contract reviews</td><td class="m">To set up</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="options">
+  <h2><span class="n">08</span>Implementation options compared</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Option</th><th>Business rules in code</th><th>Effort</th><th>Fits our ops</th><th>Best for</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td><strong>A. Curated Spring Boot MCP server on PCF</strong></td><td class="y">Yes</td><td class="m">Medium</td><td class="y">Yes</td><td>Prequal, accept, anything regulated</td></tr>
+      <tr><td><strong>B. Apigee MCP proxy from OpenAPI</strong> (preview)</td><td class="n">No</td><td class="y">Low</td><td class="y">Yes</td><td>Simple read-only lookups with good specs</td></tr>
+      <tr><td><strong>C. Kong AI MCP Proxy</strong> (if production moves to Kong)</td><td class="n">No (conversion) / passthrough to A</td><td class="y">Low</td><td class="m">If Kong adopted</td><td>Generated reads; or as the front door to A</td></tr>
+      <tr><td><strong>D. Python or Node MCP server on PCF</strong></td><td class="y">Yes</td><td class="m">Medium</td><td class="m">New runtime</td><td>Teams with those skills</td></tr>
+      <tr><td><strong>E. Managed cloud agent services</strong></td><td class="y">Yes</td><td class="m">Medium</td><td class="n">New platform</td><td>Organisations already on that cloud</td></tr>
+    </tbody>
+  </table></div>
+  <p>Recommended: <strong>A for all state-changing and regulated tools</strong>, B for simple reads once specs are agent-ready and the preview is available to us, all behind Apigee.</p>
+</section>
+
+<section id="inside">
+  <h2><span class="n">09</span>Inside the MCP server</h2>
+  <div class="layers">
+    <div class="layer"><div class="no">1</div><div class="t1">Security filter</div><div class="d">Spring Security OAuth2 resource server: JWT validation, audience, scopes to authorities.</div></div>
+    <div class="layer"><div class="no">2</div><div class="t1">MCP protocol</div><div class="d">Spring AI MCP server: <code>/mcp</code> endpoint, JSON-RPC, tool discovery from annotations, schema generation. Stateless mode.</div></div>
+    <div class="layer"><div class="no">3</div><div class="t1">Tool layer</div><div class="d"><code>@McpTool</code> methods: validation, consent and confirmation rules, ownership checks, per-tool authorization, audit event.</div></div>
+    <div class="layer"><div class="no">4</div><div class="t1">Translation</div><div class="d">Mapper: internal codes to plain results, next steps, PII trimming.</div></div>
+    <div class="layer"><div class="no">5</div><div class="t1">Adapter</div><div class="d">Backend interface with mock and HTTP implementations; token exchange or service credentials; timeouts; no automatic retries on writes.</div></div>
+    <div class="layer"><div class="no">6</div><div class="t1">Operations</div><div class="d">Actuator health, metrics per tool, tracing, structured logs to Splunk, New Relic agent.</div></div>
+  </div>
+  <h3>Scaling and resilience</h3>
+  <ul>
+    <li><strong>Stateless</strong>: use Spring AI's <code>STATELESS</code> protocol mode; any instance answers any request; no sticky sessions; scale with <code>cf scale</code> or autoscaler.</li>
+    <li><strong>Ownership data</strong> (which caller created which <code>prequalId</code>) must not live in instance memory. Keep it in the backend, or in a shared store such as Redis or GemFire.</li>
+    <li><strong>Timeouts</strong> shorter than the host's tool timeout so the model receives a clear message.</li>
+    <li><strong>Circuit breaker</strong> on reads (Resilience4j); writes fail fast with "outcome unknown, retry with the same key".</li>
+    <li><strong>Connection pools</strong> sized for backend capacity; quotas at Apigee protect the APIs from agent loops.</li>
+  </ul>
+</section>
+
+<section id="one-or-many">
+  <h2><span class="n">10</span>One MCP server or many?</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Model</th><th>Pros</th><th>Cons</th><th>When</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td>One Apply MCP server, one package per product</td><td>One deployment, one security setup, shared patterns</td><td>One team owns all tools</td><td>Start here</td></tr>
+      <tr><td>One server per product (prequal, PayLater…)</td><td>Independent release cycles</td><td>More deployments and Apigee proxies</td><td>When products have different owners or cadences</td></tr>
+      <tr><td>Aggregating gateway in front of many servers</td><td>One endpoint for agents; central catalogue</td><td>Gateway capability needed</td><td>When many teams publish servers</td></tr>
+    </tbody>
+  </table></div>
+  <p>Whatever the split, keep the total number of tools an agent sees small, and allow enabling or disabling individual tools by configuration per environment.</p>
+</section>
+
+<section id="envs">
+  <h2><span class="n">11</span>Environments and promotion</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Environment</th><th>Backend</th><th>Clients</th><th>Auth</th></tr></thead>
+    <tbody>
+      <tr><td>Local</td><td>Mock</td><td>MCP Inspector, Copilot</td><td>None or test tokens</td></tr>
+      <tr><td>Dev / SIT</td><td>Real lower-environment APIs</td><td>Test agents, Inspector</td><td>IdP test tenant</td></tr>
+      <tr><td>Performance</td><td>Lower environment at scale</td><td>Load scripts using an MCP client</td><td>Service tokens</td></tr>
+      <tr><td>Production</td><td>Production APIs</td><td>Approved hosts only</td><td>Full OAuth, per-tool scopes</td></tr>
+    </tbody>
+  </table></div>
+  <p>Production must refuse to start with the mock backend (a startup guard on the <code>prod</code> profile).</p>
+</section>
+
+<section id="observe">
+  <h2><span class="n">12</span>Observability</h2>
+  <ul>
+    <li><strong>Correlation:</strong> Apigee generates or forwards a correlation id; the MCP server logs it and sends it to the APIs; New Relic distributed tracing links the spans. The 2026-07-28 specification also lets clients pass OpenTelemetry trace context in <code>_meta</code>.</li>
+    <li><strong>Metrics per tool:</strong> calls, errors by reason, latency percentiles, rejected-by-rule counts.</li>
+    <li><strong>Audit stream:</strong> one structured event per call to a dedicated Splunk index with the retention compliance requires.</li>
+    <li><strong>Dashboards:</strong> agent traffic by client application, by tool, by employee group.</li>
+    <li><strong>Alerts:</strong> error spikes, quota exhaustion, unusual accept volume, repeated authorization failures.</li>
+  </ul>
+</section>
+
+<section id="testing">
+  <h2><span class="n">13</span>Testing strategy</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Level</th><th>What it proves</th><th>Tooling</th></tr></thead>
+    <tbody>
+      <tr><td>Unit</td><td>Rules, validation, code translation</td><td>JUnit (exists)</td></tr>
+      <tr><td>Adapter contract</td><td>Requests and responses match the API specs</td><td>Stub server tests (exists); contract tests against Swagger</td></tr>
+      <tr><td>Protocol</td><td>The server speaks MCP correctly</td><td>MCP Java client test (exists); MCP Inspector</td></tr>
+      <tr><td>Security</td><td>401/403 behaviour, audience, scope, ownership</td><td>Spring Security tests; Apigee proxy tests</td></tr>
+      <tr><td>Conversation evaluation</td><td>A real model uses the tools correctly: asks consent, never chooses for the applicant, no duplicate accepts</td><td>Scripted conversations replayed against a model on every description change</td></tr>
+      <tr><td>Load</td><td>Throughput and quotas</td><td>Load tool driving an MCP client</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="adr">
+  <h2><span class="n">14</span>Architecture decisions</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>#</th><th>Decision</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Keep APIs unchanged; build an agent-facing tool layer</td><td>Agreed</td></tr>
+      <tr><td>2</td><td>Spring Boot MCP server on PCF for curated tools</td><td>Agreed for POC</td></tr>
+      <tr><td>3</td><td>Streamable HTTP, stateless mode</td><td>Proposed</td></tr>
+      <tr><td>4</td><td>All agent traffic through Apigee; MCP PCF route internal only</td><td>Proposed</td></tr>
+      <tr><td>5</td><td>OAuth 2.1 with corporate IdP; tokens validated at Apigee and server</td><td>Proposed</td></tr>
+      <tr><td>6</td><td>MCP server calls APIs through Apigee with token exchange (service credentials until available)</td><td>Proposed</td></tr>
+      <tr><td>7</td><td>Per-tool scopes: <code>prequal.check</code>, <code>application.read</code>, <code>prequal.accept</code></td><td>Proposed</td></tr>
+      <tr><td>8</td><td>Hybrid: generated read tools via Apigee MCP when available</td><td>To evaluate</td></tr>
+      <tr><td>9</td><td>Accept confirmation via MRTR when SDK and hosts support it</td><td>Planned</td></tr>
+      <tr><td>10</td><td>Mock/real switch is configuration; production guard</td><td>Implemented (switch); guard planned</td></tr>
+    </tbody>
+  </table></div>
+</section>
+<div class="pager"><a href="security-and-identity.html"><div class="k">Previous</div>2 · Security and identity</a><a class="nx" href="roadmap.html"><div class="k">Next</div>4 · Roadmap and build guide</a></div><footer>Apply MCP Library · prepared for the Apply API team · facts checked against the MCP specification 2026-07-28 and vendor documentation in October 2026.</footer></main></div>
+</body>
+</html>

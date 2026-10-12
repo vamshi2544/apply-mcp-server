@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Security and Identity</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"><style>/* Layout: multi-page engineering library. Library bar on top, sticky page contents on the left, one reading column; figures and tables scroll inside their own frames. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --sunken:#eef1f5; --line:#d6dbe4;
+  --fg:#1c2330; --muted:#566173; --accent:#003087; --accent-soft:#e3e9f5;
+  --hi:#ffc500; --hi-ink:#4a3a00; --hi-soft:#fff6d6;
+  --ok:#1f7a4d; --ok-soft:#e2f3ea; --warn:#9a5b00; --warn-soft:#fdf0dc; --bad:#b3261e; --bad-soft:#fbe5e3;
+  --code-bg:#0f1b33; --code-fg:#dfe6f3; --code-dim:#8fa0bf; --code-key:#ffd75e; --code-str:#9fd8b8;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body)}
+
+.libbar{border-bottom:1px solid var(--line);background:var(--surface)}
+.libbar .in{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:10px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}
+.libbar .brand{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-right:8px;text-decoration:none}
+.libbar a.pg{font-size:14px;color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.libbar a.pg:hover{color:var(--fg)}
+.libbar a.pg.on{color:var(--fg);border-bottom-color:var(--hi);font-weight:600}
+@media (max-width:640px){.libbar .in{padding-inline:16px}}
+
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:28px 80px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+@media (max-width:940px){.wrap{grid-template-columns:minmax(0,1fr);gap:22px;padding-inline:16px}}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;font-size:14px;max-height:calc(100vh - 40px);overflow:auto}
+nav.toc .lbl{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+nav.toc a{display:flex;gap:10px;padding:5px 10px;border-radius:6px;color:var(--muted);text-decoration:none;line-height:1.4}
+nav.toc a .n{font:500 12px/1.65 var(--mono);color:var(--muted);opacity:.6;flex:none}
+nav.toc a:hover{background:var(--accent-soft);color:var(--accent)}
+@media (max-width:940px){nav.toc{position:static;max-height:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+  nav.toc ol{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}}
+
+main{min-width:0;max-width:840px}
+header.page{padding-bottom:24px;border-bottom:1px solid var(--line)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font:650 clamp(30px,5vw,44px)/1.1 var(--display);margin:14px 0 12px;text-wrap:balance}
+.lede{font-size:18px;color:var(--muted);max-width:66ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{font:500 12px/1 var(--mono);padding:7px 10px;border-radius:999px;background:var(--sunken);color:var(--muted);border:1px solid var(--line)}
+
+section{padding-top:46px;scroll-margin-top:12px}
+h2{font:650 27px/1.2 var(--display);margin:0 0 8px;display:flex;gap:14px;align-items:baseline;text-wrap:balance}
+h2 .n{font:500 14px var(--mono);color:var(--accent);flex:none}
+h3{font:600 18px/1.35 var(--body);margin:28px 0 8px}
+h4{font:600 15px/1.4 var(--body);margin:20px 0 6px}
+p,li{max-width:70ch}
+p{margin:0 0 14px}
+ul,ol{padding-left:22px;margin:0 0 14px}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+strong{font-weight:600}
+.sub{color:var(--muted)}
+code{font:500 .87em var(--mono);background:var(--sunken);border:1px solid var(--line);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+
+.answer{background:var(--hi-soft);border:1px solid color-mix(in srgb,var(--hi) 55%,var(--line));border-left:6px solid var(--hi);border-radius:8px;padding:16px 20px;margin:18px 0}
+.answer .k{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--hi-ink);margin-bottom:8px}
+.answer p{font-size:17px;line-height:1.55}
+.answer p:last-child{margin:0}
+.callout{border-radius:8px;padding:14px 18px;margin:16px 0;font-size:15px}
+.callout.info{background:var(--accent-soft)} .callout.info b{color:var(--accent)}
+.callout.warn{background:var(--warn-soft)} .callout.warn b{color:var(--warn)}
+.callout.ok{background:var(--ok-soft)} .callout.ok b{color:var(--ok)}
+.callout.bad{background:var(--bad-soft)} .callout.bad b{color:var(--bad)}
+.callout p:last-child,.callout ul:last-child{margin-bottom:0}
+.analogy{border:1px dashed var(--line);border-radius:8px;padding:12px 16px;margin:16px 0;font-size:15px;background:var(--surface)}
+.analogy b{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+
+figure{margin:18px 0 22px}
+figure .frame{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:80ch}
+svg text{font-family:var(--body)}
+svg.d{width:100%;height:auto}
+.lane-box{fill:var(--sunken);stroke:var(--line)}
+.lane-hi{fill:var(--hi-soft);stroke:var(--hi)}
+.lane-ext{fill:var(--accent-soft);stroke:var(--accent)}
+.lane-t{font-size:12.5px;font-weight:600;fill:var(--fg)}
+.lane-s{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.life{stroke:var(--line);stroke-dasharray:4 4}
+.phase{fill:var(--accent-soft)}
+.phase-t{font-size:11.5px;font-weight:600;fill:var(--accent);font-family:var(--mono)}
+.msg-req{stroke:var(--fg);stroke-width:1.4}
+.msg-res{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 3}
+.msg-bad{stroke:var(--bad);stroke-width:1.4}
+.ah{fill:var(--fg)} .ah2{fill:var(--muted)} .ah3{fill:var(--bad)}
+.msg-t{font-size:11px;fill:var(--fg);font-family:var(--mono);paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
+.note-box{fill:var(--surface);stroke:var(--line)}
+.note-t{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.self{fill:none;stroke:var(--fg);stroke-width:1.3}
+.b{fill:var(--surface);stroke:var(--line)}
+.b-api{fill:var(--sunken);stroke:var(--muted)}
+.b-hi{fill:var(--hi-soft);stroke:var(--hi)}
+.b-acc{fill:var(--accent-soft);stroke:var(--accent)}
+.b-ok{fill:var(--ok-soft);stroke:var(--ok)}
+.b-bad{fill:var(--bad-soft);stroke:var(--bad)}
+.zone{fill:none;stroke:var(--line);stroke-dasharray:5 4}
+.zone-t{font-size:10.5px;fill:var(--muted);font-family:var(--mono);letter-spacing:.08em}
+.t{font-size:12.5px;font-weight:600;fill:var(--fg)}
+.s{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.e{stroke:var(--muted);stroke-width:1.4;fill:none}
+.e-acc{stroke:var(--accent);stroke-width:1.6;fill:none}
+.e-dash{stroke:var(--muted);stroke-width:1.2;fill:none;stroke-dasharray:4 4}
+.e-bad{stroke:var(--bad);stroke-width:1.4;fill:none;stroke-dasharray:5 3}
+.et{font-size:10.5px;fill:var(--muted);font-family:var(--mono);paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;border:1px solid;display:inline-block}
+.sw.hi{background:var(--hi-soft);border-color:var(--hi)}
+.sw.acc{background:var(--accent-soft);border-color:var(--accent)}
+.sw.api{background:var(--sunken);border-color:var(--muted)}
+.sw.ext{background:var(--surface);border-color:var(--line)}
+
+.tbl{overflow-x:auto;margin:14px 0 18px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px/1.3 var(--body);color:var(--muted);background:var(--sunken)}
+tr:last-child td{border-bottom:0}
+tr.grp td{background:var(--sunken);font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 12px}
+tr.pick td{background:var(--hi-soft)}
+td.y{color:var(--ok);font-weight:600} td.n{color:var(--bad);font-weight:600} td.m{color:var(--warn);font-weight:600}
+
+.code{margin:12px 0 18px;border-radius:8px;background:var(--code-bg);overflow:hidden;min-width:0}
+.code .bar{padding:7px 12px;border-bottom:1px solid #ffffff14;font:500 11px var(--mono);color:var(--code-dim);letter-spacing:.06em}
+pre{margin:0;padding:12px 16px;overflow-x:auto;font:400 12.5px/1.6 var(--mono);color:var(--code-fg)}
+pre .c{color:var(--code-dim)} pre .k{color:var(--code-key)} pre .s{color:var(--code-str)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.card .t1{font-weight:600;margin-bottom:2px}
+.card .e1{font:500 11.5px var(--mono);color:var(--accent);margin-bottom:6px}
+.card p{font-size:14px;color:var(--muted);margin:0}
+a.card{text-decoration:none;color:inherit;display:block}
+a.card:hover{border-color:var(--accent)}
+a.card .go{font:500 12px var(--mono);color:var(--accent);margin-top:10px}
+
+.steps{list-style:none;padding:0;display:grid;gap:8px;counter-reset:s}
+.steps>li{counter-increment:s;display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-width:none}
+.steps>li::before{content:counter(s);font:600 18px var(--mono);color:var(--accent)}
+.steps>li b{display:block}
+.steps>li span{color:var(--muted);font-size:14.5px;display:block}
+
+.qa{list-style:none;padding:0;counter-reset:q}
+.qa>li{counter-increment:q;position:relative;padding:14px 16px 14px 52px;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:10px;max-width:none}
+.qa>li::before{content:"Q" counter(q);position:absolute;left:14px;top:15px;font:600 12px var(--mono);color:var(--accent)}
+.qa>li>b{display:block;margin-bottom:4px}
+.qa>li>div{color:var(--fg);font-size:15px}
+.qa>li>div p{margin-bottom:8px}
+
+.check{list-style:none;padding:0;columns:2;column-gap:28px}
+@media (max-width:700px){.check{columns:1}}
+.check li{break-inside:avoid;padding-left:26px;position:relative;font-size:15px}
+.check li::before{content:"";position:absolute;left:0;top:5px;width:14px;height:14px;border:1.5px solid var(--muted);border-radius:3px}
+
+.phases{display:grid;gap:10px;margin:16px 0}
+.ph{display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+@media (max-width:600px){.ph{grid-template-columns:minmax(0,1fr);gap:6px}}
+.ph .w{font:600 12px var(--mono);color:var(--accent)}
+.ph .w span{display:block;font-weight:400;color:var(--muted);margin-top:4px}
+.ph .t1{font-weight:600;margin-bottom:4px}
+.ph ul{margin:6px 0 0;font-size:14.5px}
+.ph .exit{margin-top:8px;font-size:14px;background:var(--ok-soft);border-radius:6px;padding:8px 10px}
+.ph .exit b{color:var(--ok)}
+.ph.now{border-color:var(--hi);background:var(--hi-soft)}
+
+.layers{display:grid;gap:6px;margin:16px 0}
+.layer{display:grid;grid-template-columns:44px 170px minmax(0,1fr);gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+@media (max-width:640px){.layer{grid-template-columns:36px minmax(0,1fr)} .layer .d{grid-column:2}}
+.layer .no{font:600 16px var(--mono);color:var(--accent)}
+.layer .t1{font-weight:600}
+.layer .d{font-size:14.5px;color:var(--muted)}
+
+dl.gl{display:grid;grid-template-columns:190px minmax(0,1fr);gap:8px 18px;font-size:15px}
+dl.gl dt{font:500 14px var(--mono);color:var(--accent)}
+dl.gl dd{margin:0}
+@media (max-width:560px){dl.gl{grid-template-columns:minmax(0,1fr)} dl.gl dd{margin-bottom:8px}}
+
+.pager{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:56px}
+.pager a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px;text-decoration:none;color:var(--fg)}
+.pager a:hover{border-color:var(--accent)}
+.pager .k{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pager .nx{text-align:right;grid-column:2}
+footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="libbar"><div class="in"><a class="brand" href="index.html">Apply MCP Library</a><a class="pg" href="index.html">Start here</a><a class="pg" href="mcp-from-zero.html">1 · MCP from zero</a><a class="pg on" href="security-and-identity.html">2 · Security and identity</a><a class="pg" href="reference-architecture.html">3 · Reference architecture</a><a class="pg" href="roadmap.html">4 · Roadmap and build guide</a></div></div><div class="wrap"><nav class="toc" aria-label="On this page"><div class="lbl">On this page</div><ol><li><a href="#answer"><span class="n">01</span><span>The short answer</span></a></li><li><a href="#who"><span class="n">02</span><span>Who has to be identified</span></a></li><li><a href="#terms"><span class="n">03</span><span>Authentication, authorization, consent: three different things</span></a></li><li><a href="#layers"><span class="n">04</span><span>Defence in depth: the layers</span></a></li><li><a href="#oauth"><span class="n">05</span><span>OAuth in ten minutes, for API people</span></a></li><li><a href="#spec"><span class="n">06</span><span>What the MCP specification requires</span></a></li><li><a href="#flow-user"><span class="n">07</span><span>Flow A: an employee using an AI assistant</span></a></li><li><a href="#flow-m2m"><span class="n">08</span><span>Flow B: an internal agent platform (no person signing in)</span></a></li><li><a href="#downstream"><span class="n">09</span><span>From the MCP server to the prequal APIs</span></a></li><li><a href="#ema"><span class="n">10</span><span>Enterprise-managed authorization (EMA)</span></a></li><li><a href="#where"><span class="n">11</span><span>Where to validate: Apigee, the MCP server, or both</span></a></li><li><a href="#scopes"><span class="n">12</span><span>Scope and permission design for Apply tools</span></a></li><li><a href="#threats"><span class="n">13</span><span>Threat model</span></a></li><li><a href="#audit"><span class="n">14</span><span>Audit and monitoring</span></a></li><li><a href="#review"><span class="n">15</span><span>Security review checklist</span></a></li><li><a href="#ask"><span class="n">16</span><span>Questions to take to the identity and security teams</span></a></li></ol></nav><main><header class="page">
+  <div class="eyebrow">Document 2 of 4 · security</div>
+  <h1>Agent security and identity</h1>
+  <p class="lede">How to know who is calling our MCP server, what they are allowed to do, and how that identity travels safely from the AI assistant, through Apigee, to the MCP server and on to the prequal APIs. Written for someone who knows API keys and Apigee but has not worked with OAuth for agents.</p>
+  <div class="meta"><span class="chip">Reading time ~45 min</span><span class="chip">MCP authorization 2026-07-28</span><span class="chip">OAuth 2.1</span></div>
+</header>
+
+<section id="answer">
+  <h2><span class="n">01</span>The short answer</h2>
+  <div class="answer"><div class="k">Can we authenticate an agent before it reaches our gateway?</div>
+    <p>Yes, and the MCP standard defines how. The agent logs in with our corporate identity provider <em>before</em> it ever calls us and receives an access token. Apigee checks that token on every request <em>before</em> anything reaches PCF. The MCP server checks it again, then uses its own credentials to call the APIs.</p>
+  </div>
+  <p>Put precisely, there are three moments:</p>
+  <ol>
+    <li><strong>Before the request:</strong> the AI assistant obtains a token from the identity provider. An employee signs in with normal corporate single sign-on and MFA. An agent platform authenticates as a service with a certificate or signed key. No token, no access.</li>
+    <li><strong>At the front door:</strong> Apigee is the first thing on our side that the request touches. It rejects anything without a valid token for this MCP server, checks the scopes for the tool being called, and applies quotas. Network rules can also stop unknown networks from reaching Apigee at all.</li>
+    <li><strong>Behind the door:</strong> the MCP server validates the token again (defence in depth), applies business rules, and calls the prequal APIs with a separate token addressed to them. The client's token is never forwarded.</li>
+  </ol>
+  <div class="callout info"><p><b>Key idea:</b> the gateway does not log the agent in; the identity provider does. The gateway is where we <em>check</em> the result of that login, which is the earliest point we control.</p></div>
+</section>
+
+<section id="who">
+  <h2><span class="n">02</span>Who has to be identified</h2>
+  <p>In a normal REST integration you usually identify one thing: the calling application (an Apigee API key or client id). In an agent integration there are up to five identities, and mixing them up is the source of most security mistakes.</p>
+  <figure>
+    <div class="frame">
+      <svg class="d" viewBox="0 0 800 280" style="min-width:680px" role="img" aria-label="Identity map: the person, the AI application, the MCP server workload, and the backend API each have their own identity; the applicant is data inside the request, not an authenticated caller in the employee-assisted model." xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="im" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker></defs>
+        <rect x="14" y="30" width="140" height="70" rx="8" class="b"/>
+        <text x="84" y="56" class="t" text-anchor="middle">1 · Person</text>
+        <text x="84" y="74" class="s" text-anchor="middle">employee, SSO user</text>
+        <text x="84" y="88" class="s" text-anchor="middle">"who asked"</text>
+        <rect x="14" y="170" width="140" height="70" rx="8" class="b"/>
+        <text x="84" y="196" class="t" text-anchor="middle">Applicant</text>
+        <text x="84" y="214" class="s" text-anchor="middle">customer details</text>
+        <text x="84" y="228" class="s" text-anchor="middle">data, not a login</text>
+        <rect x="200" y="100" width="150" height="80" rx="8" class="b-acc"/>
+        <text x="275" y="128" class="t" text-anchor="middle">2 · AI application</text>
+        <text x="275" y="146" class="s" text-anchor="middle">OAuth client id</text>
+        <text x="275" y="162" class="s" text-anchor="middle">"which agent"</text>
+        <rect x="396" y="100" width="130" height="80" rx="8" class="b-acc"/>
+        <text x="461" y="128" class="t" text-anchor="middle">Apigee</text>
+        <text x="461" y="146" class="s" text-anchor="middle">checks 1 + 2</text>
+        <text x="461" y="162" class="s" text-anchor="middle">token, scopes</text>
+        <rect x="570" y="100" width="100" height="80" rx="8" class="b-hi"/>
+        <text x="620" y="128" class="t" text-anchor="middle">3 · MCP</text>
+        <text x="620" y="144" class="t" text-anchor="middle">server</text>
+        <text x="620" y="162" class="s" text-anchor="middle">own identity</text>
+        <rect x="700" y="100" width="90" height="80" rx="8" class="b-api"/>
+        <text x="745" y="128" class="t" text-anchor="middle">4 · API</text>
+        <text x="745" y="146" class="s" text-anchor="middle">trusts 3</text>
+        <text x="745" y="162" class="s" text-anchor="middle">(+ sees 1)</text>
+        <path d="M154 65 C180 65 180 125 198 125" class="e" marker-end="url(#im)"/>
+        <path d="M154 205 C180 205 180 160 198 160" class="e-dash" marker-end="url(#im)"/>
+        <line x1="350" y1="140" x2="394" y2="140" class="e" marker-end="url(#im)"/>
+        <line x1="526" y1="140" x2="568" y2="140" class="e" marker-end="url(#im)"/>
+        <line x1="670" y1="140" x2="698" y2="140" class="e" marker-end="url(#im)"/>
+        <rect x="396" y="214" width="274" height="40" rx="8" class="b"/>
+        <text x="533" y="232" class="t" text-anchor="middle">5 · Identity provider (IdP)</text>
+        <text x="533" y="247" class="s" text-anchor="middle">issues and exchanges tokens</text>
+        <line x1="275" y1="180" x2="394" y2="232" class="e-dash"/>
+        <line x1="620" y1="180" x2="620" y2="212" class="e-dash"/>
+      </svg>
+    </div>
+  </figure>
+  <div class="tbl"><table>
+    <thead><tr><th>Identity</th><th>Question it answers</th><th>How it is proven</th><th>Who checks it</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1. Person</strong> (employee)</td><td>Which human asked for this?</td><td>Corporate SSO and MFA at the identity provider; appears as <code>sub</code> in the token</td><td>Apigee and MCP server</td></tr>
+      <tr><td><strong>2. AI application</strong> (the agent or host)</td><td>Which software is calling? Copilot, Claude, the call-centre assistant?</td><td>OAuth client id; for services a certificate (mTLS) or signed JWT</td><td>Identity provider at token issue; Apigee per call</td></tr>
+      <tr><td><strong>3. MCP server</strong></td><td>Is this really our server calling the API?</td><td>Its own client credentials or workload identity</td><td>Identity provider and Apigee (internal proxy)</td></tr>
+      <tr><td><strong>4. Backend API</strong></td><td>Is this the real prequal API?</td><td>TLS certificate, internal routing</td><td>MCP server</td></tr>
+      <tr><td><strong>5. Identity provider</strong></td><td>Is this token genuine?</td><td>Token signature against the IdP's published keys (JWKS)</td><td>Everyone who validates tokens</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn"><p><b>The applicant is not the caller.</b> In the first use cases (an employee or internal agent assisting an applicant), the applicant's name, date of birth and SSN digits are <em>data in the request</em>, not a login. We authenticate the employee and the application. Consent is recorded as a business fact. If agents later act directly for consumers, consumer identity (customer login, OTP, device trust) becomes a separate, larger design, closer to our existing digital channels.</p></div>
+</section>
+
+<section id="terms">
+  <h2><span class="n">03</span>Authentication, authorization, consent: three different things</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Term</th><th>Question</th><th>Prequal example</th><th>Mechanism</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Authentication</strong> (authN)</td><td>Who are you?</td><td>Employee E12345 using the Copilot application</td><td>SSO login, token signature</td></tr>
+      <tr><td><strong>Authorization</strong> (authZ)</td><td>What may you do?</td><td>May check prequal; may not accept offers unless in the call-centre group</td><td>Scopes, groups, Apigee API products, per-tool rules, server checks</td></tr>
+      <tr><td><strong>Consent and confirmation</strong></td><td>Did the applicant agree to this specific action?</td><td>Applicant agreed to a soft inquiry; applicant confirmed the Cashback Card</td><td>Business rules in the MCP server; host approval prompt; MRTR confirmation; audit record</td></tr>
+    </tbody>
+  </table></div>
+  <p>OAuth handles the first two. The third is our business logic, and it must be enforced in the MCP server regardless of how good the token is. A perfectly authenticated employee can still be talked into the wrong action by a misled model.</p>
+</section>
+
+<section id="layers">
+  <h2><span class="n">04</span>Defence in depth: the layers</h2>
+  <p class="sub">Each layer stops a different failure. Layers 1 to 4 act before or as the request arrives at Apigee.</p>
+  <div class="layers">
+    <div class="layer"><div class="no">1</div><div class="t1">Network</div><div class="d">Only corporate networks, approved agent platforms, or private connectivity can reach the MCP endpoint at all. IP allowlists, WAF, DDoS protection at the edge. Unknown traffic never reaches Apigee's MCP proxy.</div></div>
+    <div class="layer"><div class="no">2</div><div class="t1">Transport</div><div class="d">TLS everywhere. Mutual TLS (client certificates) for service-to-service callers such as internal agent platforms.</div></div>
+    <div class="layer"><div class="no">3</div><div class="t1">Client identity</div><div class="d">Only registered AI applications get tokens. The identity provider knows each client id; Apigee knows each as a developer app tied to an API product.</div></div>
+    <div class="layer"><div class="no">4</div><div class="t1">User identity</div><div class="d">The employee signs in through corporate SSO with MFA. The token carries who they are and their groups.</div></div>
+    <div class="layer"><div class="no">5</div><div class="t1">Token check at Apigee</div><div class="d">Signature, issuer, audience (must be this MCP server), expiry, scopes. Invalid means HTTP 401 with discovery information. Quotas and spike arrest per client.</div></div>
+    <div class="layer"><div class="no">6</div><div class="t1">Per-tool authorization</div><div class="d">Apigee reads <code>Mcp-Name</code> and allows the tool only if the token has the scope or group for it. Wrong scope means HTTP 403 <code>insufficient_scope</code>.</div></div>
+    <div class="layer"><div class="no">7</div><div class="t1">MCP server checks</div><div class="d">Re-validates the token (never trust the network alone), checks business authorization (is this <code>prequalId</code> owned by this caller?), and enforces consent and confirmation rules.</div></div>
+    <div class="layer"><div class="no">8</div><div class="t1">Human in the loop</div><div class="d">Host approval prompts for destructive tools; MRTR confirmation of the exact offer before acceptance.</div></div>
+    <div class="layer"><div class="no">9</div><div class="t1">Downstream credentials</div><div class="d">The MCP server calls the APIs with its own credentials or an exchanged token addressed to the API. Never with the client's token.</div></div>
+    <div class="layer"><div class="no">10</div><div class="t1">Audit and monitoring</div><div class="d">Who (person and application), what tool, which ids, outcome, correlation id, across Apigee, MCP server and APIs. No PII in logs. Alerts on unusual patterns.</div></div>
+  </div>
+</section>
+
+<section id="oauth">
+  <h2><span class="n">05</span>OAuth in ten minutes, for API people</h2>
+  <p>You already use OAuth if your Apigee proxies issue or verify tokens. MCP uses <strong>OAuth 2.1</strong>, which is OAuth 2.0 with the risky options removed (no implicit flow, no password grant, PKCE mandatory).</p>
+  <div class="tbl"><table>
+    <thead><tr><th>OAuth role</th><th>In our setup</th></tr></thead>
+    <tbody>
+      <tr><td>Resource owner</td><td>The employee (or, for machine flows, the agent platform itself)</td></tr>
+      <tr><td>Client</td><td>The AI application: Copilot, Claude, an internal agent</td></tr>
+      <tr><td>Authorization server</td><td>The corporate identity provider</td></tr>
+      <tr><td>Resource server</td><td>The MCP server, with Apigee as its front door</td></tr>
+    </tbody>
+  </table></div>
+  <h3>What is inside an access token</h3>
+  <div class="code"><div class="bar">DECODED JWT ACCESS TOKEN (ILLUSTRATIVE)</div><pre>{
+  <span class="k">"iss"</span>: <span class="s">"https://login.corp.example.com"</span>,          <span class="c">// who issued it: must be our IdP</span>
+  <span class="k">"aud"</span>: <span class="s">"https://mcp.apply.example.com/mcp"</span>,       <span class="c">// who it is for: must be THIS MCP server</span>
+  <span class="k">"sub"</span>: <span class="s">"E12345"</span>,                                  <span class="c">// the employee</span>
+  <span class="k">"client_id"</span>: <span class="s">"copilot-jetbrains"</span>,                   <span class="c">// the AI application</span>
+  <span class="k">"scope"</span>: <span class="s">"prequal.check application.read"</span>,       <span class="c">// what it may do</span>
+  <span class="k">"groups"</span>: [<span class="s">"apply-callcentre"</span>],
+  <span class="k">"iat"</span>: 1791830000, <span class="k">"exp"</span>: 1791830900               <span class="c">// short life: 15 minutes</span>
+}</pre></div>
+  <p>The token is signed by the identity provider. Anyone can verify the signature with the provider's public keys (published at a JWKS URL), so Apigee and the MCP server can validate it without calling the identity provider on each request.</p>
+  <h3>The grant types that matter</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Grant</th><th>Who uses it</th><th>How it works</th><th>Our use</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Authorization code + PKCE</strong></td><td>Apps acting for a person</td><td>Browser opens the IdP login page; the person signs in; the app receives a one-time code and swaps it for a token, proving with PKCE that it started the flow</td><td>Employees using Copilot or Claude</td></tr>
+      <tr><td><strong>Client credentials</strong></td><td>Services acting for themselves</td><td>The service proves its identity (certificate or signed JWT) and receives a token directly</td><td>Internal agent platforms; the MCP server calling APIs</td></tr>
+      <tr><td><strong>Token exchange</strong> (RFC 8693)</td><td>A service acting on behalf of the original caller</td><td>Swap token A for token B with a different audience, keeping the original person in the token</td><td>MCP server calling prequal APIs with user context</td></tr>
+      <tr><td><strong>JWT bearer / ID-JAG</strong></td><td>Enterprise-managed access</td><td>An identity assertion from the corporate IdP is exchanged for an access token</td><td>Enterprise-managed authorization (section 10)</td></tr>
+      <tr><td><strong>Refresh token</strong></td><td>Long conversations</td><td>Obtain a new access token without signing in again</td><td>Handled by the host</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Scopes</strong> name permissions (<code>prequal.check</code>). <strong>Audience</strong> names the intended recipient. A token with the right scope but the wrong audience must be rejected; that single check prevents most token-reuse attacks.</p>
+</section>
+
+<section id="spec">
+  <h2><span class="n">06</span>What the MCP specification requires</h2>
+  <p>Authorization is optional in MCP, but for any HTTP server handling customer data we must implement it, and when we do, the specification is precise. The key requirements in 2026-07-28:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Requirement</th><th>Applies to</th><th>What it means for us</th></tr></thead>
+    <tbody>
+      <tr><td>The MCP server is an OAuth 2.1 resource server</td><td>Server</td><td>It accepts bearer tokens and validates them; it does not have to issue them.</td></tr>
+      <tr><td>Publish OAuth Protected Resource Metadata (RFC 9728)</td><td>Server <strong>MUST</strong></td><td>A JSON document at <code>/.well-known/oauth-protected-resource</code> telling clients which identity provider to use and which scopes exist.</td></tr>
+      <tr><td>Answer 401 with <code>WWW-Authenticate: Bearer resource_metadata="…"</code></td><td>Server</td><td>How a client discovers where to log in. Can be done by Apigee.</td></tr>
+      <tr><td>Resource indicators (RFC 8707)</td><td>Client <strong>MUST</strong> send; server <strong>MUST</strong> validate audience</td><td>Tokens are minted for exactly our MCP URL and are useless elsewhere.</td></tr>
+      <tr><td>Tokens only in the <code>Authorization</code> header, on every request</td><td>Client</td><td>Never in the URL or query string.</td></tr>
+      <tr><td>No token passthrough</td><td>Server <strong>MUST NOT</strong></td><td>We never forward the client's token to the prequal APIs.</td></tr>
+      <tr><td>Client registration: Client ID Metadata Documents, pre-registration, or (deprecated) Dynamic Client Registration</td><td>Client and IdP</td><td>Enterprise practice: pre-register each approved AI application with the IdP.</td></tr>
+      <tr><td>Issuer validation (RFC 9207)</td><td>Client</td><td>Protects clients against identity-provider mix-up attacks.</td></tr>
+      <tr><td>Scope challenges: 403 <code>insufficient_scope</code> with required scopes</td><td>Server <strong>SHOULD</strong></td><td>When a token lacks <code>prequal.accept</code>, tell the client so it can ask for more (step-up).</td></tr>
+      <tr><td>Least-privilege scopes</td><td>Server and client</td><td>Small baseline scope; elevated scopes only for risky tools.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Example: our protected resource metadata</h3>
+  <div class="code"><div class="bar">GET https://mcp.apply.example.com/.well-known/oauth-protected-resource</div><pre>{
+  <span class="k">"resource"</span>: <span class="s">"https://mcp.apply.example.com/mcp"</span>,
+  <span class="k">"authorization_servers"</span>: [<span class="s">"https://login.corp.example.com"</span>],
+  <span class="k">"scopes_supported"</span>: [<span class="s">"prequal.check"</span>, <span class="s">"application.read"</span>],
+  <span class="k">"bearer_methods_supported"</span>: [<span class="s">"header"</span>],
+  <span class="k">"resource_name"</span>: <span class="s">"Apply prequalification tools"</span>
+}</pre></div>
+  <p><code>prequal.accept</code> is deliberately not in <code>scopes_supported</code>. It is requested only when a client tries to accept an offer and receives a scope challenge, so ordinary sessions never carry it.</p>
+</section>
+
+<section id="flow-user">
+  <h2><span class="n">07</span>Flow A: an employee using an AI assistant</h2>
+  <p>This is the main scenario: a call-centre or operations employee uses Copilot or Claude, and the assistant calls our tools on their behalf.</p>
+  <figure><div class="frame"><svg class="d" viewBox="0 0 840 778" style="min-width:760px" role="img" aria-label="OAuth flow for an employee using an AI assistant: discovery, single sign-on with PKCE, then every call validated at Apigee and again at the MCP server" xmlns="http://www.w3.org/2000/svg"><defs><marker id="m3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="m3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker><marker id="m3c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah3"/></marker></defs><rect x="10.0" y="6" width="140" height="46" rx="6" class="lane-box"/><text x="80" y="26" class="lane-t" text-anchor="middle">Employee</text><text x="80" y="42" class="lane-s" text-anchor="middle">browser + SSO</text><line x1="80" y1="52" x2="80" y2="772" class="life"/><rect x="180.0" y="6" width="140" height="46" rx="6" class="lane-box"/><text x="250" y="26" class="lane-t" text-anchor="middle">MCP client</text><text x="250" y="42" class="lane-s" text-anchor="middle">Copilot / Claude</text><line x1="250" y1="52" x2="250" y2="772" class="life"/><rect x="350.0" y="6" width="140" height="46" rx="6" class="lane-box lane-ext"/><text x="420" y="26" class="lane-t" text-anchor="middle">Corporate IdP</text><text x="420" y="42" class="lane-s" text-anchor="middle">authorization server</text><line x1="420" y1="52" x2="420" y2="772" class="life"/><rect x="520.0" y="6" width="140" height="46" rx="6" class="lane-box lane-ext"/><text x="590" y="26" class="lane-t" text-anchor="middle">Apigee</text><text x="590" y="42" class="lane-s" text-anchor="middle">MCP front door</text><line x1="590" y1="52" x2="590" y2="772" class="life"/><rect x="690.0" y="6" width="140" height="46" rx="6" class="lane-box lane-hi"/><text x="760" y="26" class="lane-t" text-anchor="middle">MCP server</text><text x="760" y="42" class="lane-s" text-anchor="middle">on PCF</text><line x1="760" y1="52" x2="760" y2="772" class="life"/><rect x="6" y="86" width="828" height="20" rx="4" class="phase"/><text x="16" y="100" class="phase-t">1  Discover: the server tells the client where to log in</text><line x1="253" y1="142" x2="586" y2="142" class="msg-req" marker-end="url(#m3a)"/><text x="420.0" y="136" class="msg-t" text-anchor="middle">POST /mcp  (no token)</text><line x1="587" y1="172" x2="254" y2="172" class="msg-res" marker-end="url(#m3b)"/><text x="420.0" y="166" class="msg-t" text-anchor="middle">401  WWW-Authenticate: resource_metadata=…</text><line x1="253" y1="202" x2="586" y2="202" class="msg-req" marker-end="url(#m3a)"/><text x="420.0" y="196" class="msg-t" text-anchor="middle">GET /.well-known/oauth-protected-resource</text><line x1="587" y1="232" x2="254" y2="232" class="msg-res" marker-end="url(#m3b)"/><text x="420.0" y="226" class="msg-t" text-anchor="middle">authorization_servers: [corporate IdP]</text><line x1="253" y1="262" x2="416" y2="262" class="msg-req" marker-end="url(#m3a)"/><text x="335.0" y="256" class="msg-t" text-anchor="middle">GET IdP metadata (OIDC discovery)</text><line x1="417" y1="292" x2="254" y2="292" class="msg-res" marker-end="url(#m3b)"/><text x="335.0" y="286" class="msg-t" text-anchor="middle">authorize + token endpoints</text><rect x="6" y="302" width="828" height="20" rx="4" class="phase"/><text x="16" y="316" class="phase-t">2  Log in: authorization code + PKCE, token bound to the MCP server</text><line x1="247" y1="358" x2="84" y2="358" class="msg-req" marker-end="url(#m3a)"/><text x="165.0" y="352" class="msg-t" text-anchor="middle">open browser: /authorize?resource=…/mcp&amp;scope=prequal.read</text><line x1="83" y1="388" x2="416" y2="388" class="msg-req" marker-end="url(#m3a)"/><text x="250.0" y="382" class="msg-t" text-anchor="middle">SSO login + MFA (existing corporate login)</text><line x1="417" y1="418" x2="84" y2="418" class="msg-res" marker-end="url(#m3b)"/><text x="250.0" y="412" class="msg-t" text-anchor="middle">redirect with code + iss</text><line x1="83" y1="448" x2="246" y2="448" class="msg-res" marker-end="url(#m3b)"/><text x="165.0" y="442" class="msg-t" text-anchor="middle">code delivered to client</text><line x1="253" y1="478" x2="416" y2="478" class="msg-req" marker-end="url(#m3a)"/><text x="335.0" y="472" class="msg-t" text-anchor="middle">POST /token  code + code_verifier + resource</text><line x1="417" y1="508" x2="254" y2="508" class="msg-res" marker-end="url(#m3b)"/><text x="335.0" y="502" class="msg-t" text-anchor="middle">access token  aud=MCP server, scopes, sub=employee</text><rect x="6" y="518" width="828" height="20" rx="4" class="phase"/><text x="16" y="532" class="phase-t">3  Every call: the gateway checks the token before anything reaches PCF</text><line x1="253" y1="574" x2="586" y2="574" class="msg-req" marker-end="url(#m3a)"/><text x="420.0" y="568" class="msg-t" text-anchor="middle">tools/call  Authorization: Bearer …  Mcp-Name: prequal_get_offers</text><path d="M590 596 h-26 v16 h24" class="self" marker-end="url(#m3a)"/><text x="558" y="608" class="msg-t" text-anchor="end">verify JWT, aud, scope, API product, quota</text><line x1="593" y1="648" x2="756" y2="648" class="msg-req" marker-end="url(#m3a)"/><text x="675.0" y="642" class="msg-t" text-anchor="middle">forward + verified identity</text><path d="M760 670 h-26 v16 h24" class="self" marker-end="url(#m3a)"/><text x="728" y="682" class="msg-t" text-anchor="end">re-verify token, per-tool authz</text><line x1="757" y1="722" x2="594" y2="722" class="msg-res" marker-end="url(#m3b)"/><text x="675.0" y="716" class="msg-t" text-anchor="middle">result</text><line x1="587" y1="752" x2="254" y2="752" class="msg-res" marker-end="url(#m3b)"/><text x="420.0" y="746" class="msg-t" text-anchor="middle">result</text></svg></div>
+    <figcaption>Phases 1 and 2 happen once; the token is then reused (and refreshed) for every call in phase 3. The employee sees a normal corporate login page, the same as for any internal web application.</figcaption></figure>
+  <h3>What each party does</h3>
+  <ul>
+    <li><strong>Client (AI assistant):</strong> discovers the identity provider from our metadata, runs authorization code + PKCE with <code>resource</code> set to our MCP URL, stores and refreshes the token, sends it on every call.</li>
+    <li><strong>Identity provider:</strong> signs the employee in with SSO and MFA, applies policy (is this person allowed to use this AI application with this resource?), issues a short-lived token with audience, scopes and groups.</li>
+    <li><strong>Apigee:</strong> serves the 401 challenge and metadata, verifies the token, maps the client id to a developer app and API product, applies per-tool policy and quotas, forwards to PCF.</li>
+    <li><strong>MCP server:</strong> verifies the token again, reads the employee and application identity, applies business authorization, writes the audit record.</li>
+  </ul>
+  <div class="callout info"><p><b>What the employee experiences:</b> the first time they use the prequal tools, a browser window shows the corporate login (often skipped silently if already signed in). After that, nothing until the token expires and the assistant refreshes it.</p></div>
+</section>
+
+<section id="flow-m2m">
+  <h2><span class="n">08</span>Flow B: an internal agent platform (no person signing in)</h2>
+  <p>An internal service, for example a call-centre assistant that runs on its own servers, calls our tools as itself.</p>
+  <figure><div class="frame"><svg class="d" viewBox="0 0 760 366" style="min-width:660px" role="img" aria-label="Machine-to-machine flow for an internal agent platform using client credentials and mutual TLS" xmlns="http://www.w3.org/2000/svg"><defs><marker id="m4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="m4b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker><marker id="m4c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah3"/></marker></defs><rect x="10.0" y="6" width="140" height="46" rx="6" class="lane-box"/><text x="80" y="26" class="lane-t" text-anchor="middle">Agent platform</text><text x="80" y="42" class="lane-s" text-anchor="middle">a service, no user</text><line x1="80" y1="52" x2="80" y2="360" class="life"/><rect x="210.0" y="6" width="140" height="46" rx="6" class="lane-box lane-ext"/><text x="280" y="26" class="lane-t" text-anchor="middle">Corporate IdP</text><text x="280" y="42" class="lane-s" text-anchor="middle">authorization server</text><line x1="280" y1="52" x2="280" y2="360" class="life"/><rect x="410.0" y="6" width="140" height="46" rx="6" class="lane-box lane-ext"/><text x="480" y="26" class="lane-t" text-anchor="middle">Apigee</text><text x="480" y="42" class="lane-s" text-anchor="middle">MCP front door</text><line x1="480" y1="52" x2="480" y2="360" class="life"/><rect x="610.0" y="6" width="140" height="46" rx="6" class="lane-box lane-hi"/><text x="680" y="26" class="lane-t" text-anchor="middle">MCP server</text><text x="680" y="42" class="lane-s" text-anchor="middle">on PCF</text><line x1="680" y1="52" x2="680" y2="360" class="life"/><line x1="83" y1="106" x2="276" y2="106" class="msg-req" marker-end="url(#m4a)"/><text x="180.0" y="100" class="msg-t" text-anchor="middle">POST /token  grant=client_credentials</text><rect x="20" y="114" width="320" height="24" rx="4" class="note-box"/><text x="180.0" y="130" class="note-t" text-anchor="middle">client proves itself: private_key_jwt or mTLS certificate (no shared secret)</text><line x1="277" y1="176" x2="84" y2="176" class="msg-res" marker-end="url(#m4b)"/><text x="180.0" y="170" class="msg-t" text-anchor="middle">access token  aud=MCP server, sub=agent-platform</text><line x1="83" y1="206" x2="476" y2="206" class="msg-req" marker-end="url(#m4a)"/><text x="280.0" y="200" class="msg-t" text-anchor="middle">tools/call  Bearer + client certificate (mTLS)</text><path d="M480 228 h-26 v16 h24" class="self" marker-end="url(#m4a)"/><text x="448" y="240" class="msg-t" text-anchor="end">verify mTLS, JWT, API product</text><line x1="483" y1="280" x2="676" y2="280" class="msg-req" marker-end="url(#m4a)"/><text x="580.0" y="274" class="msg-t" text-anchor="middle">forward + verified client identity</text><line x1="677" y1="310" x2="484" y2="310" class="msg-res" marker-end="url(#m4b)"/><text x="580.0" y="304" class="msg-t" text-anchor="middle">result</text><line x1="477" y1="340" x2="84" y2="340" class="msg-res" marker-end="url(#m4b)"/><text x="280.0" y="334" class="msg-t" text-anchor="middle">result</text></svg></div></figure>
+  <ul>
+    <li>The platform is registered with the identity provider as a confidential client and proves its identity with <code>private_key_jwt</code> (a JWT signed with its private key) or a client certificate, not a shared secret.</li>
+    <li>Apigee additionally requires mutual TLS from this platform's network.</li>
+    <li>The client-credentials pattern for MCP is described in a draft MCP authorization extension. Enterprises can use it today because both ends are under our control.</li>
+    <li>If the platform acts for a specific employee, it should pass that employee's identity in a token (token exchange or an on-behalf-of token from the IdP), not as a plain header the platform could forge.</li>
+  </ul>
+</section>
+
+<section id="downstream">
+  <h2><span class="n">09</span>From the MCP server to the prequal APIs</h2>
+  <p>The MCP server receives token A, addressed to itself. It now needs to call the prequal APIs, which are protected by Apigee as today. There are three options, and one of them is forbidden.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Option</th><th>How</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Token passthrough</strong></td><td>Forward token A to the prequal API</td><td class="n">Forbidden by the MCP specification. Token A is addressed to the MCP server; reusing it breaks audience checks and creates confused-deputy risk.</td></tr>
+      <tr><td><strong>Service credentials + asserted user</strong></td><td>MCP server calls Apigee with its own client credentials (as any consumer app does today) and sends the employee id in a header for audit</td><td class="m">Simplest; good for the first release. The API trusts the MCP server to tell the truth about the user.</td></tr>
+      <tr class="pick"><td><strong>Token exchange</strong> (RFC 8693)</td><td>MCP server swaps token A for token B addressed to the prequal API, still naming the employee, with the MCP server recorded as the actor</td><td class="y">Best. Every hop sees a token addressed to it; the employee is cryptographically carried end to end.</td></tr>
+    </tbody>
+  </table></div>
+  <figure><div class="frame"><svg class="d" viewBox="0 0 790 406" style="min-width:660px" role="img" aria-label="Token exchange: the MCP server swaps the token it received for a new token addressed to the prequal API" xmlns="http://www.w3.org/2000/svg"><defs><marker id="m5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="m5b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker><marker id="m5c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah3"/></marker></defs><rect x="10.0" y="6" width="140" height="46" rx="6" class="lane-box lane-hi"/><text x="80" y="26" class="lane-t" text-anchor="middle">MCP server</text><text x="80" y="42" class="lane-s" text-anchor="middle">holds token A</text><line x1="80" y1="52" x2="80" y2="400" class="life"/><rect x="220.0" y="6" width="140" height="46" rx="6" class="lane-box lane-ext"/><text x="290" y="26" class="lane-t" text-anchor="middle">Corporate IdP</text><text x="290" y="42" class="lane-s" text-anchor="middle">token exchange</text><line x1="290" y1="52" x2="290" y2="400" class="life"/><rect x="430.0" y="6" width="140" height="46" rx="6" class="lane-box lane-ext"/><text x="500" y="26" class="lane-t" text-anchor="middle">Apigee</text><text x="500" y="42" class="lane-s" text-anchor="middle">internal proxy</text><line x1="500" y1="52" x2="500" y2="400" class="life"/><rect x="640.0" y="6" width="140" height="46" rx="6" class="lane-box"/><text x="710" y="26" class="lane-t" text-anchor="middle">Prequal API</text><text x="710" y="42" class="lane-s" text-anchor="middle">on PCF</text><line x1="710" y1="52" x2="710" y2="400" class="life"/><rect x="20" y="84" width="330" height="24" rx="4" class="note-box"/><text x="185.0" y="100" class="note-t" text-anchor="middle">token A: aud=MCP server, sub=employee</text><line x1="83" y1="146" x2="286" y2="146" class="msg-req" marker-end="url(#m5a)"/><text x="185.0" y="140" class="msg-t" text-anchor="middle">exchange: subject_token=A, audience=API</text><line x1="287" y1="176" x2="84" y2="176" class="msg-res" marker-end="url(#m5b)"/><text x="185.0" y="170" class="msg-t" text-anchor="middle">token B: aud=API, sub=employee, act=MCP</text><line x1="83" y1="206" x2="496" y2="206" class="msg-req" marker-end="url(#m5a)"/><text x="290.0" y="200" class="msg-t" text-anchor="middle">POST /v1/prequal/offers  Bearer B</text><path d="M500 228 h-26 v16 h24" class="self" marker-end="url(#m5a)"/><text x="468" y="240" class="msg-t" text-anchor="end">verify B as for any consumer</text><line x1="503" y1="280" x2="706" y2="280" class="msg-req" marker-end="url(#m5a)"/><text x="605.0" y="274" class="msg-t" text-anchor="middle">forward</text><line x1="707" y1="310" x2="504" y2="310" class="msg-res" marker-end="url(#m5b)"/><text x="605.0" y="304" class="msg-t" text-anchor="middle">200</text><line x1="497" y1="340" x2="84" y2="340" class="msg-res" marker-end="url(#m5b)"/><text x="290.0" y="334" class="msg-t" text-anchor="middle">200</text><rect x="20" y="348" width="750" height="24" rx="4" class="note-box"/><text x="395.0" y="364" class="note-t" text-anchor="middle">token A never leaves the MCP server (no token passthrough)</text></svg></div>
+    <figcaption>Token exchange requires identity-provider support. If ours does not offer it yet, start with service credentials and move to exchange later; the MCP server is the only component that changes.</figcaption></figure>
+</section>
+
+<section id="ema">
+  <h2><span class="n">10</span>Enterprise-managed authorization (EMA)</h2>
+  <p>With standard MCP authorization, every employee has to authorize every MCP server separately, and security teams have no single place to see or control who can use which server. <strong>Enterprise-Managed Authorization</strong> is an official MCP extension, marked stable in June 2026, that moves this decision into the corporate identity provider.</p>
+  <figure><div class="frame"><svg class="d" viewBox="0 0 840 396" style="min-width:740px" role="img" aria-label="Enterprise-managed authorization: the corporate identity provider grants access to the MCP server centrally" xmlns="http://www.w3.org/2000/svg"><defs><marker id="m6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="m6b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker><marker id="m6c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah3"/></marker></defs><rect x="10.0" y="6" width="140" height="46" rx="6" class="lane-box"/><text x="80" y="26" class="lane-t" text-anchor="middle">Employee</text><text x="80" y="42" class="lane-s" text-anchor="middle">signed in once</text><line x1="80" y1="52" x2="80" y2="390" class="life"/><rect x="180.0" y="6" width="140" height="46" rx="6" class="lane-box"/><text x="250" y="26" class="lane-t" text-anchor="middle">MCP client</text><text x="250" y="42" class="lane-s" text-anchor="middle">Claude, VS Code</text><line x1="250" y1="52" x2="250" y2="390" class="life"/><rect x="350.0" y="6" width="140" height="46" rx="6" class="lane-box lane-ext"/><text x="420" y="26" class="lane-t" text-anchor="middle">Corporate IdP</text><text x="420" y="42" class="lane-s" text-anchor="middle">SSO + policy</text><line x1="420" y1="52" x2="420" y2="390" class="life"/><rect x="520.0" y="6" width="140" height="46" rx="6" class="lane-box lane-ext"/><text x="590" y="26" class="lane-t" text-anchor="middle">MCP auth server</text><text x="590" y="42" class="lane-s" text-anchor="middle">issues MCP tokens</text><line x1="590" y1="52" x2="590" y2="390" class="life"/><rect x="690.0" y="6" width="140" height="46" rx="6" class="lane-box lane-hi"/><text x="760" y="26" class="lane-t" text-anchor="middle">MCP server</text><text x="760" y="42" class="lane-s" text-anchor="middle">Apigee + PCF</text><line x1="760" y1="52" x2="760" y2="390" class="life"/><line x1="83" y1="106" x2="246" y2="106" class="msg-req" marker-end="url(#m6a)"/><text x="165.0" y="100" class="msg-t" text-anchor="middle">sign in to the AI app with corporate SSO</text><line x1="253" y1="136" x2="416" y2="136" class="msg-req" marker-end="url(#m6a)"/><text x="335.0" y="130" class="msg-t" text-anchor="middle">request ID-JAG for the MCP server</text><path d="M420 158 h26 v16 h-24" class="self" marker-end="url(#m6a)"/><text x="452" y="170" class="msg-t">policy: group, role, conditional access</text><line x1="417" y1="210" x2="254" y2="210" class="msg-res" marker-end="url(#m6b)"/><text x="335.0" y="204" class="msg-t" text-anchor="middle">ID-JAG (identity assertion grant)</text><line x1="253" y1="240" x2="586" y2="240" class="msg-req" marker-end="url(#m6a)"/><text x="420.0" y="234" class="msg-t" text-anchor="middle">exchange ID-JAG for access token</text><line x1="587" y1="270" x2="254" y2="270" class="msg-res" marker-end="url(#m6b)"/><text x="420.0" y="264" class="msg-t" text-anchor="middle">access token aud=MCP server</text><line x1="253" y1="300" x2="756" y2="300" class="msg-req" marker-end="url(#m6a)"/><text x="505.0" y="294" class="msg-t" text-anchor="middle">tools/call  Bearer token</text><line x1="757" y1="330" x2="254" y2="330" class="msg-res" marker-end="url(#m6b)"/><text x="505.0" y="324" class="msg-t" text-anchor="middle">result</text><rect x="20" y="338" width="800" height="24" rx="4" class="note-box"/><text x="420.0" y="354" class="note-t" text-anchor="middle">no per-server consent screen; admins enable the server once in the IdP</text></svg></div></figure>
+  <ul>
+    <li>The employee signs in to the AI application with corporate SSO.</li>
+    <li>The application asks the identity provider for an <strong>Identity Assertion JWT Authorization Grant (ID-JAG)</strong> for our MCP server. The identity provider applies policy: group, role, conditional access.</li>
+    <li>The application exchanges the ID-JAG with the MCP server's authorization server for an access token.</li>
+    <li>Admins enable the server once; employees in the right groups get access automatically; there is one audit trail.</li>
+  </ul>
+  <div class="callout warn"><p><b>Status to check:</b> at the time of writing, Okta (through its Cross App Access feature) was the first supported identity provider, and Anthropic's Claude products and a preview of Visual Studio Code were named as supporting clients. Ask the identity team whether our provider supports ID-JAG. If not, standard OAuth (flow A) works with any OAuth 2.1 compliant provider and is the starting point.</p></div>
+</section>
+
+<section id="where">
+  <h2><span class="n">11</span>Where to validate: Apigee, the MCP server, or both</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Check</th><th>Apigee</th><th>MCP server</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Token signature, issuer, expiry</td><td class="y">Yes</td><td class="y">Yes</td><td>Defence in depth: a misrouted request or a bypassed gateway must still fail.</td></tr>
+      <tr><td>Audience = this MCP server</td><td class="y">Yes</td><td class="y">Yes</td><td>Required by the specification.</td></tr>
+      <tr><td>Scope for the tool (<code>Mcp-Name</code>)</td><td class="y">Yes</td><td class="y">Yes</td><td>Gateway gives early rejection and central policy; server is the final authority.</td></tr>
+      <tr><td>Client app, API product, quota, spike arrest</td><td class="y">Yes</td><td>No</td><td>Platform concern; already how we run APIs.</td></tr>
+      <tr><td>mTLS for service clients</td><td class="y">Yes</td><td>No</td><td>Terminated at the edge.</td></tr>
+      <tr><td>Business authorization (owns this <code>prequalId</code>?)</td><td>No</td><td class="y">Yes</td><td>Needs business data.</td></tr>
+      <tr><td>Consent, confirmation, idempotency rules</td><td>No</td><td class="y">Yes</td><td>Business logic.</td></tr>
+      <tr><td>Serving protected resource metadata</td><td colspan="2">Either; keep one owner. Apigee is simplest because it owns the public URL.</td><td>The <code>resource</code> value must be the public Apigee URL, not the PCF route.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>In Apigee</h3>
+  <p>An MCP proxy is an ordinary Apigee proxy whose target is the MCP server's PCF route. Typical policies, in order:</p>
+  <ol>
+    <li>Return the protected resource metadata for <code>GET /.well-known/oauth-protected-resource</code>.</li>
+    <li>If no bearer token: raise 401 with the <code>WWW-Authenticate</code> header pointing at the metadata.</li>
+    <li>Verify the JWT against the identity provider's JWKS (VerifyJWT policy): issuer, audience, expiry.</li>
+    <li>Identify the client application and its API product; apply Quota and SpikeArrest.</li>
+    <li>Read <code>Mcp-Name</code>; compare with the scopes or groups in the token; raise 403 <code>insufficient_scope</code> when missing.</li>
+    <li>Forward to the MCP server (keeping the token for the server's own validation), with a correlation id.</li>
+  </ol>
+  <p>If we use Apigee's own MCP feature (in preview) for generated tools, the same API-product controls apply to it.</p>
+  <h3>In the MCP server (Spring Boot)</h3>
+  <p>Spring Security's OAuth2 resource server validates JWTs with a few lines of configuration (<code>issuer-uri</code> or <code>jwk-set-uri</code>, plus an audience check). The community module <code>spring-ai-community/mcp-security</code> adds MCP-specific helpers (protected resource metadata, audience validation) for Spring AI servers. It is labelled work in progress, so evaluate it or use plain Spring Security. Method security (<code>@PreAuthorize("hasAuthority('SCOPE_prequal.accept')")</code>) on each tool method gives per-tool authorization in code.</p>
+  <div class="code"><div class="bar">application.yml (MCP server, illustrative)</div><pre><span class="k">spring</span>:
+  <span class="k">security</span>:
+    <span class="k">oauth2</span>:
+      <span class="k">resourceserver</span>:
+        <span class="k">jwt</span>:
+          <span class="k">issuer-uri</span>: https://login.corp.example.com          <span class="c"># our IdP</span>
+          <span class="k">audiences</span>: https://mcp.apply.example.com/mcp      <span class="c"># reject tokens for anything else</span></pre></div>
+</section>
+
+<section id="scopes">
+  <h2><span class="n">12</span>Scope and permission design for Apply tools</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Scope</th><th>Tools</th><th>Who gets it</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>prequal.check</code></td><td><code>prequal_get_offers</code></td><td>Approved employee groups and agent apps</td><td>Creates a soft inquiry; not read-only.</td></tr>
+      <tr><td><code>application.read</code></td><td><code>prequal_get_application_status</code></td><td>Same as above</td><td>Read only. Server checks the caller may see this application.</td></tr>
+      <tr><td><code>prequal.accept</code></td><td><code>prequal_accept_offer</code></td><td>Narrower group; requested by step-up</td><td>Irreversible. Requires confirmation; audit every call.</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>Name scopes by business capability, not by tool, so they survive tool changes and apply to other products.</li>
+    <li>Map scopes to identity-provider groups that already exist for the call centre or operations, where possible.</li>
+    <li>Never issue a wildcard scope (<code>apply.*</code>, <code>all</code>).</li>
+    <li>Bind state to the caller: store which employee and application created each <code>prequalId</code>; reject accept or status calls on ids the caller does not own. The specification warns explicitly against treating possession of an id as authorization.</li>
+  </ul>
+</section>
+
+<section id="threats">
+  <h2><span class="n">13</span>Threat model</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Threat</th><th>What happens</th><th>Mitigation</th><th>Where</th></tr></thead>
+    <tbody>
+      <tr><td>Prompt injection</td><td>Text the model reads (an email, a document, a web page) instructs it to call accept or to reveal data</td><td>Server-side rules; confirmation outside the model (MRTR or host approval); least-privilege scopes; no sensitive data in results</td><td>Server, host</td></tr>
+      <tr><td>Excessive agency</td><td>The model takes actions the person did not intend</td><td>Few, task-level tools; destructive hints; confirmations; per-tool scopes</td><td>Server, gateway</td></tr>
+      <tr><td>Token theft or replay</td><td>A stolen token is used elsewhere</td><td>Short lifetimes; audience binding; TLS; mTLS for services; no tokens in logs or URLs</td><td>IdP, gateway</td></tr>
+      <tr><td>Token passthrough / confused deputy</td><td>A token for one service is accepted or forwarded to another</td><td>Strict audience validation; token exchange or service credentials downstream</td><td>Server</td></tr>
+      <tr><td>State handle hijacking</td><td>Someone uses another user's <code>prequalId</code> or <code>applicationId</code></td><td>Unguessable ids; bind ids to the caller; check ownership on every call</td><td>Server</td></tr>
+      <tr><td>Data leakage through results</td><td>PII enters the model context and host logs</td><td>Return minimal data; never echo SSN, DOB, income, address</td><td>Server</td></tr>
+      <tr><td>Data leakage through logs</td><td>PII in Splunk</td><td>Log tool, outcome, ids, duration only; mask at Apigee too</td><td>Server, gateway</td></tr>
+      <tr><td>Tool description tampering</td><td>A changed description steers models to misuse a tool</td><td>Descriptions in code, code review, version control, tests on description content</td><td>SDLC</td></tr>
+      <tr><td>Unapproved AI clients</td><td>A personal or unknown AI app connects</td><td>Pre-registered clients only; identity-provider app assignment; Apigee developer apps</td><td>IdP, gateway</td></tr>
+      <tr><td>Denial of service and cost</td><td>An agent loop floods the server or backend</td><td>Quotas, spike arrest, timeouts, circuit breakers</td><td>Gateway, server</td></tr>
+      <tr><td>Duplicate applications</td><td>Retries create two applications</td><td>Idempotency keys; one acceptance per prequal; no automatic retries</td><td>Server, API</td></tr>
+      <tr><td>Supply chain</td><td>A vulnerable SDK or dependency</td><td>Standard dependency scanning; pinned versions; upgrade policy</td><td>SDLC</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="audit">
+  <h2><span class="n">14</span>Audit and monitoring</h2>
+  <p>For every tool call, record one structured audit event (separate from debug logs):</p>
+  <div class="code"><div class="bar">AUDIT EVENT (ILLUSTRATIVE)</div><pre>{ <span class="k">"ts"</span>: <span class="s">"2026-10-12T20:15:03Z"</span>, <span class="k">"correlationId"</span>: <span class="s">"7f3c…"</span>,
+  <span class="k">"user"</span>: <span class="s">"E12345"</span>, <span class="k">"client"</span>: <span class="s">"copilot-jetbrains"</span>, <span class="k">"tool"</span>: <span class="s">"prequal_accept_offer"</span>,
+  <span class="k">"prequalId"</span>: <span class="s">"PQ-1001"</span>, <span class="k">"offerId"</span>: <span class="s">"OF-1001-1"</span>, <span class="k">"idempotencyKey"</span>: <span class="s">"7c9e…"</span>,
+  <span class="k">"confirmation"</span>: <span class="s">"mrtr"</span>, <span class="k">"outcome"</span>: <span class="s">"ACCEPTED"</span>, <span class="k">"applicationId"</span>: <span class="s">"APP-55001"</span>, <span class="k">"durationMs"</span>: 412 }</pre></div>
+  <ul>
+    <li>No applicant PII in the audit event; the ids link to records in the systems of record.</li>
+    <li>Propagate the correlation id and trace context from Apigee through the MCP server to the APIs (the 2026-07-28 specification documents OpenTelemetry <code>traceparent</code> in <code>_meta</code>).</li>
+    <li>Dashboards per tool: call rate, error rate, latency, rejections by reason (no consent, no confirmation, insufficient scope, ownership).</li>
+    <li>Alerts: spikes in accept calls, repeated 403s from one client, unusual hours, many prequals from one employee.</li>
+  </ul>
+</section>
+
+<section id="review">
+  <h2><span class="n">15</span>Security review checklist</h2>
+  <ul class="check">
+    <li>Only remote Streamable HTTP; no stdio in production</li>
+    <li>MCP endpoint reachable only through Apigee</li>
+    <li>Protected resource metadata published at the public URL</li>
+    <li>401 with <code>WWW-Authenticate</code> on missing or bad token</li>
+    <li>JWT signature, issuer, audience, expiry checked at Apigee</li>
+    <li>Same checks repeated in the MCP server</li>
+    <li>Per-tool scopes enforced at Apigee and in code</li>
+    <li>Approved AI clients pre-registered; others rejected</li>
+    <li>mTLS for service-to-service clients</li>
+    <li>No token passthrough; exchange or service credentials downstream</li>
+    <li>Ids bound to the caller and checked on every call</li>
+    <li>Consent and confirmation enforced in code</li>
+    <li>Idempotency on all state-changing calls</li>
+    <li>No PII in results or logs</li>
+    <li>Audit event per call, retained per policy</li>
+    <li>Quotas, spike arrest, timeouts configured</li>
+    <li>Descriptions reviewed and covered by tests</li>
+    <li>AI hosts approved by InfoSec for the data classification</li>
+  </ul>
+</section>
+
+<section id="ask">
+  <h2><span class="n">16</span>Questions to take to the identity and security teams</h2>
+  <ol class="qa">
+    <li><b>Which identity provider do we use for workforce SSO, and is it OAuth 2.1 / OpenID Connect compliant?</b><div>Needed for flow A. Most enterprise providers are.</div></li>
+    <li><b>Can it issue access tokens with a custom audience (resource indicators) for the MCP server?</b><div>Required for audience binding.</div></li>
+    <li><b>Does it support token exchange (RFC 8693)?</b><div>Decides how the MCP server calls the APIs with user context.</div></li>
+    <li><b>Does it support ID-JAG / enterprise-managed authorization?</b><div>Decides whether we can centrally manage access without per-server consent.</div></li>
+    <li><b>Which AI hosts are approved, and for which data classifications?</b><div>Copilot, Claude, internal platforms; can applicant PII flow through them?</div></li>
+    <li><b>Which groups should receive <code>prequal.check</code> and <code>prequal.accept</code>?</b><div>Business owners decide; identity team implements.</div></li>
+    <li><b>Is Apigee VerifyJWT against the IdP's JWKS an approved pattern, and do we terminate mTLS at Apigee?</b><div>Confirms the gateway design.</div></li>
+    <li><b>What audit retention and format does compliance require for agent-initiated credit actions?</b><div>Shapes the audit event.</div></li>
+  </ol>
+</section>
+<div class="pager"><a href="mcp-from-zero.html"><div class="k">Previous</div>1 · MCP from zero</a><a class="nx" href="reference-architecture.html"><div class="k">Next</div>3 · Reference architecture</a></div><footer>Apply MCP Library · prepared for the Apply API team · facts checked against the MCP specification 2026-07-28 and vendor documentation in October 2026.</footer></main></div>
+</body>
+</html>

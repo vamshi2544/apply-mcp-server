@@ -140,6 +140,7 @@ Open [`docs/index.html`](docs/index.html) in a browser for the full handbook: ar
 
 Related pages in `docs/`:
 
+- [`library/index.html`](docs/library/index.html): **Apply MCP Library**, four in-depth documents: MCP from zero, agent security and identity, reference architecture on Apigee and PCF, roadmap to production.
 - [`field-guide.html`](docs/field-guide.html): Prequal MCP Field Guide, the learning guide for MCP and this design.
 - [`machine-readable-apis.html`](docs/machine-readable-apis.html): leadership briefing on machine-readable APIs and which route to MCP to use.
 

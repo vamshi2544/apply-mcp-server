@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MCP From Zero</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"><style>/* Layout: multi-page engineering library. Library bar on top, sticky page contents on the left, one reading column; figures and tables scroll inside their own frames. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --sunken:#eef1f5; --line:#d6dbe4;
+  --fg:#1c2330; --muted:#566173; --accent:#003087; --accent-soft:#e3e9f5;
+  --hi:#ffc500; --hi-ink:#4a3a00; --hi-soft:#fff6d6;
+  --ok:#1f7a4d; --ok-soft:#e2f3ea; --warn:#9a5b00; --warn-soft:#fdf0dc; --bad:#b3261e; --bad-soft:#fbe5e3;
+  --code-bg:#0f1b33; --code-fg:#dfe6f3; --code-dim:#8fa0bf; --code-key:#ffd75e; --code-str:#9fd8b8;
+  --display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f141c; --surface:#161d28; --sunken:#1c2533; --line:#2c3748;
+  --fg:#e4e9f1; --muted:#9aa6b8; --accent:#8fb0ff; --accent-soft:#1c2a47;
+  --hi:#ffc500; --hi-ink:#ffe08a; --hi-soft:#2e2709;
+  --ok:#6fd3a0; --ok-soft:#14301f; --warn:#f2b45a; --warn-soft:#33240c; --bad:#ff8a80; --bad-soft:#3a1714;
+  --code-bg:#0a101c; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.65 var(--body)}
+
+.libbar{border-bottom:1px solid var(--line);background:var(--surface)}
+.libbar .in{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:10px;display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}
+.libbar .brand{font:600 13px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent);margin-right:8px;text-decoration:none}
+.libbar a.pg{font-size:14px;color:var(--muted);text-decoration:none;padding:4px 0;border-bottom:2px solid transparent}
+.libbar a.pg:hover{color:var(--fg)}
+.libbar a.pg.on{color:var(--fg);border-bottom-color:var(--hi);font-weight:600}
+@media (max-width:640px){.libbar .in{padding-inline:16px}}
+
+.wrap{max-width:1240px;margin:0 auto;padding-inline:20px;padding-block:28px 80px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px}
+@media (max-width:940px){.wrap{grid-template-columns:minmax(0,1fr);gap:22px;padding-inline:16px}}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);align-self:start;font-size:14px;max-height:calc(100vh - 40px);overflow:auto}
+nav.toc .lbl{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+nav.toc ol{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+nav.toc a{display:flex;gap:10px;padding:5px 10px;border-radius:6px;color:var(--muted);text-decoration:none;line-height:1.4}
+nav.toc a .n{font:500 12px/1.65 var(--mono);color:var(--muted);opacity:.6;flex:none}
+nav.toc a:hover{background:var(--accent-soft);color:var(--accent)}
+@media (max-width:940px){nav.toc{position:static;max-height:none;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+  nav.toc ol{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}}
+
+main{min-width:0;max-width:840px}
+header.page{padding-bottom:24px;border-bottom:1px solid var(--line)}
+.eyebrow{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font:650 clamp(30px,5vw,44px)/1.1 var(--display);margin:14px 0 12px;text-wrap:balance}
+.lede{font-size:18px;color:var(--muted);max-width:66ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.chip{font:500 12px/1 var(--mono);padding:7px 10px;border-radius:999px;background:var(--sunken);color:var(--muted);border:1px solid var(--line)}
+
+section{padding-top:46px;scroll-margin-top:12px}
+h2{font:650 27px/1.2 var(--display);margin:0 0 8px;display:flex;gap:14px;align-items:baseline;text-wrap:balance}
+h2 .n{font:500 14px var(--mono);color:var(--accent);flex:none}
+h3{font:600 18px/1.35 var(--body);margin:28px 0 8px}
+h4{font:600 15px/1.4 var(--body);margin:20px 0 6px}
+p,li{max-width:70ch}
+p{margin:0 0 14px}
+ul,ol{padding-left:22px;margin:0 0 14px}
+li{margin-bottom:6px}
+a{color:var(--accent)}
+strong{font-weight:600}
+.sub{color:var(--muted)}
+code{font:500 .87em var(--mono);background:var(--sunken);border:1px solid var(--line);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+
+.answer{background:var(--hi-soft);border:1px solid color-mix(in srgb,var(--hi) 55%,var(--line));border-left:6px solid var(--hi);border-radius:8px;padding:16px 20px;margin:18px 0}
+.answer .k{font:500 11px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--hi-ink);margin-bottom:8px}
+.answer p{font-size:17px;line-height:1.55}
+.answer p:last-child{margin:0}
+.callout{border-radius:8px;padding:14px 18px;margin:16px 0;font-size:15px}
+.callout.info{background:var(--accent-soft)} .callout.info b{color:var(--accent)}
+.callout.warn{background:var(--warn-soft)} .callout.warn b{color:var(--warn)}
+.callout.ok{background:var(--ok-soft)} .callout.ok b{color:var(--ok)}
+.callout.bad{background:var(--bad-soft)} .callout.bad b{color:var(--bad)}
+.callout p:last-child,.callout ul:last-child{margin-bottom:0}
+.analogy{border:1px dashed var(--line);border-radius:8px;padding:12px 16px;margin:16px 0;font-size:15px;background:var(--surface)}
+.analogy b{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px}
+
+figure{margin:18px 0 22px}
+figure .frame{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+figcaption{font-size:13px;color:var(--muted);margin-top:8px;max-width:80ch}
+svg text{font-family:var(--body)}
+svg.d{width:100%;height:auto}
+.lane-box{fill:var(--sunken);stroke:var(--line)}
+.lane-hi{fill:var(--hi-soft);stroke:var(--hi)}
+.lane-ext{fill:var(--accent-soft);stroke:var(--accent)}
+.lane-t{font-size:12.5px;font-weight:600;fill:var(--fg)}
+.lane-s{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.life{stroke:var(--line);stroke-dasharray:4 4}
+.phase{fill:var(--accent-soft)}
+.phase-t{font-size:11.5px;font-weight:600;fill:var(--accent);font-family:var(--mono)}
+.msg-req{stroke:var(--fg);stroke-width:1.4}
+.msg-res{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:5 3}
+.msg-bad{stroke:var(--bad);stroke-width:1.4}
+.ah{fill:var(--fg)} .ah2{fill:var(--muted)} .ah3{fill:var(--bad)}
+.msg-t{font-size:11px;fill:var(--fg);font-family:var(--mono);paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
+.note-box{fill:var(--surface);stroke:var(--line)}
+.note-t{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.self{fill:none;stroke:var(--fg);stroke-width:1.3}
+.b{fill:var(--surface);stroke:var(--line)}
+.b-api{fill:var(--sunken);stroke:var(--muted)}
+.b-hi{fill:var(--hi-soft);stroke:var(--hi)}
+.b-acc{fill:var(--accent-soft);stroke:var(--accent)}
+.b-ok{fill:var(--ok-soft);stroke:var(--ok)}
+.b-bad{fill:var(--bad-soft);stroke:var(--bad)}
+.zone{fill:none;stroke:var(--line);stroke-dasharray:5 4}
+.zone-t{font-size:10.5px;fill:var(--muted);font-family:var(--mono);letter-spacing:.08em}
+.t{font-size:12.5px;font-weight:600;fill:var(--fg)}
+.s{font-size:10.5px;fill:var(--muted);font-family:var(--mono)}
+.e{stroke:var(--muted);stroke-width:1.4;fill:none}
+.e-acc{stroke:var(--accent);stroke-width:1.6;fill:none}
+.e-dash{stroke:var(--muted);stroke-width:1.2;fill:none;stroke-dasharray:4 4}
+.e-bad{stroke:var(--bad);stroke-width:1.4;fill:none;stroke-dasharray:5 3}
+.et{font-size:10.5px;fill:var(--muted);font-family:var(--mono);paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:14px;height:14px;border-radius:3px;border:1px solid;display:inline-block}
+.sw.hi{background:var(--hi-soft);border-color:var(--hi)}
+.sw.acc{background:var(--accent-soft);border-color:var(--accent)}
+.sw.api{background:var(--sunken);border-color:var(--muted)}
+.sw.ext{background:var(--surface);border-color:var(--line)}
+
+.tbl{overflow-x:auto;margin:14px 0 18px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:620px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 12px/1.3 var(--body);color:var(--muted);background:var(--sunken)}
+tr:last-child td{border-bottom:0}
+tr.grp td{background:var(--sunken);font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 12px}
+tr.pick td{background:var(--hi-soft)}
+td.y{color:var(--ok);font-weight:600} td.n{color:var(--bad);font-weight:600} td.m{color:var(--warn);font-weight:600}
+
+.code{margin:12px 0 18px;border-radius:8px;background:var(--code-bg);overflow:hidden;min-width:0}
+.code .bar{padding:7px 12px;border-bottom:1px solid #ffffff14;font:500 11px var(--mono);color:var(--code-dim);letter-spacing:.06em}
+pre{margin:0;padding:12px 16px;overflow-x:auto;font:400 12.5px/1.6 var(--mono);color:var(--code-fg)}
+pre .c{color:var(--code-dim)} pre .k{color:var(--code-key)} pre .s{color:var(--code-str)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:16px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px;min-width:0}
+.card .t1{font-weight:600;margin-bottom:2px}
+.card .e1{font:500 11.5px var(--mono);color:var(--accent);margin-bottom:6px}
+.card p{font-size:14px;color:var(--muted);margin:0}
+a.card{text-decoration:none;color:inherit;display:block}
+a.card:hover{border-color:var(--accent)}
+a.card .go{font:500 12px var(--mono);color:var(--accent);margin-top:10px}
+
+.steps{list-style:none;padding:0;display:grid;gap:8px;counter-reset:s}
+.steps>li{counter-increment:s;display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;max-width:none}
+.steps>li::before{content:counter(s);font:600 18px var(--mono);color:var(--accent)}
+.steps>li b{display:block}
+.steps>li span{color:var(--muted);font-size:14.5px;display:block}
+
+.qa{list-style:none;padding:0;counter-reset:q}
+.qa>li{counter-increment:q;position:relative;padding:14px 16px 14px 52px;background:var(--surface);border:1px solid var(--line);border-radius:8px;margin-bottom:10px;max-width:none}
+.qa>li::before{content:"Q" counter(q);position:absolute;left:14px;top:15px;font:600 12px var(--mono);color:var(--accent)}
+.qa>li>b{display:block;margin-bottom:4px}
+.qa>li>div{color:var(--fg);font-size:15px}
+.qa>li>div p{margin-bottom:8px}
+
+.check{list-style:none;padding:0;columns:2;column-gap:28px}
+@media (max-width:700px){.check{columns:1}}
+.check li{break-inside:avoid;padding-left:26px;position:relative;font-size:15px}
+.check li::before{content:"";position:absolute;left:0;top:5px;width:14px;height:14px;border:1.5px solid var(--muted);border-radius:3px}
+
+.phases{display:grid;gap:10px;margin:16px 0}
+.ph{display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 16px}
+@media (max-width:600px){.ph{grid-template-columns:minmax(0,1fr);gap:6px}}
+.ph .w{font:600 12px var(--mono);color:var(--accent)}
+.ph .w span{display:block;font-weight:400;color:var(--muted);margin-top:4px}
+.ph .t1{font-weight:600;margin-bottom:4px}
+.ph ul{margin:6px 0 0;font-size:14.5px}
+.ph .exit{margin-top:8px;font-size:14px;background:var(--ok-soft);border-radius:6px;padding:8px 10px}
+.ph .exit b{color:var(--ok)}
+.ph.now{border-color:var(--hi);background:var(--hi-soft)}
+
+.layers{display:grid;gap:6px;margin:16px 0}
+.layer{display:grid;grid-template-columns:44px 170px minmax(0,1fr);gap:14px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+@media (max-width:640px){.layer{grid-template-columns:36px minmax(0,1fr)} .layer .d{grid-column:2}}
+.layer .no{font:600 16px var(--mono);color:var(--accent)}
+.layer .t1{font-weight:600}
+.layer .d{font-size:14.5px;color:var(--muted)}
+
+dl.gl{display:grid;grid-template-columns:190px minmax(0,1fr);gap:8px 18px;font-size:15px}
+dl.gl dt{font:500 14px var(--mono);color:var(--accent)}
+dl.gl dd{margin:0}
+@media (max-width:560px){dl.gl{grid-template-columns:minmax(0,1fr)} dl.gl dd{margin-bottom:8px}}
+
+.pager{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:56px}
+.pager a{display:block;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px;text-decoration:none;color:var(--fg)}
+.pager a:hover{border-color:var(--accent)}
+.pager .k{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pager .nx{text-align:right;grid-column:2}
+footer{margin-top:28px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="libbar"><div class="in"><a class="brand" href="index.html">Apply MCP Library</a><a class="pg" href="index.html">Start here</a><a class="pg on" href="mcp-from-zero.html">1 · MCP from zero</a><a class="pg" href="security-and-identity.html">2 · Security and identity</a><a class="pg" href="reference-architecture.html">3 · Reference architecture</a><a class="pg" href="roadmap.html">4 · Roadmap and build guide</a></div></div><div class="wrap"><nav class="toc" aria-label="On this page"><div class="lbl">On this page</div><ol><li><a href="#why"><span class="n">01</span><span>Why MCP exists</span></a></li><li><a href="#loop"><span class="n">02</span><span>How a model actually uses a tool</span></a></li><li><a href="#roles"><span class="n">03</span><span>The roles: host, client, server and the rest</span></a></li><li><a href="#protocol"><span class="n">04</span><span>The protocol: JSON-RPC 2.0</span></a></li><li><a href="#primitives"><span class="n">05</span><span>What a server can offer: tools, resources, prompts</span></a></li><li><a href="#transports"><span class="n">06</span><span>Transports: how the messages travel</span></a></li><li><a href="#lifecycle"><span class="n">07</span><span>Lifecycle: stateful before, stateless now</span></a></li><li><a href="#mrtr"><span class="n">08</span><span>Asking the person mid-call: multi round-trip requests</span></a></li><li><a href="#extensions"><span class="n">09</span><span>Extensions and the feature lifecycle</span></a></li><li><a href="#tooldesign"><span class="n">10</span><span>Anatomy of a good enterprise tool</span></a></li><li><a href="#clients"><span class="n">11</span><span>Who will call our server</span></a></li><li><a href="#sdks"><span class="n">12</span><span>SDKs, languages and governance</span></a></li><li><a href="#recipe"><span class="n">13</span><span>How to build any MCP server: the recipe</span></a></li><li><a href="#glossary"><span class="n">14</span><span>Glossary</span></a></li></ol></nav><main><header class="page">
+  <div class="eyebrow">Document 1 of 4 · fundamentals</div>
+  <h1>MCP from zero</h1>
+  <p class="lede">Everything about the Model Context Protocol you need before designing or reviewing an MCP server, explained for someone who knows REST APIs well and has never worked with AI agents. It covers the protocol as of the 2026-07-28 specification and notes where our proof of concept still uses the earlier version.</p>
+  <div class="meta"><span class="chip">Reading time ~35 min</span><span class="chip">Spec 2026-07-28</span><span class="chip">No AI background assumed</span></div>
+</header>
+
+<section id="why">
+  <h2><span class="n">01</span>Why MCP exists</h2>
+  <p>A large language model (LLM) on its own can only read text and write text. It cannot call an API, read a database, or check an application status. To do useful work it needs <strong>tools</strong>: functions that some program runs on its behalf.</p>
+  <p>Before MCP, every AI product invented its own way of plugging tools in. If you wanted your prequal API usable from Claude, from GitHub Copilot and from an internal agent platform, you wrote three different integrations, in three different formats, and maintained all three. With many AI products and many backend systems, that becomes an N × M problem.</p>
+  <p><strong>MCP is the standard plug.</strong> You build one MCP server for prequal. Any AI application that speaks MCP can discover its tools and call them, without integration code specific to that application.</p>
+  <div class="analogy"><b>Analogy you already know</b>MCP is to AI agents what OpenAPI plus HTTP is to applications. OpenAPI describes what an API offers; HTTP carries the calls. In MCP, the server describes its tools in a standard format, and a standard message protocol carries the calls. The difference is the consumer: a program written by a developer versus a model deciding at run time.</div>
+  <div class="tbl"><table>
+    <thead><tr><th></th><th>REST API world</th><th>MCP world</th></tr></thead>
+    <tbody>
+      <tr><td>Consumer</td><td>Code a developer wrote</td><td>An AI model choosing tools at run time</td></tr>
+      <tr><td>Description</td><td>OpenAPI spec, read at build time</td><td><code>tools/list</code> result, read at run time by the model</td></tr>
+      <tr><td>Unit of work</td><td>Endpoint (<code>POST /v1/prequal/offers</code>)</td><td>Tool (<code>prequal_get_offers</code>)</td></tr>
+      <tr><td>Message format</td><td>HTTP verbs, paths, JSON bodies</td><td>JSON-RPC 2.0 messages over HTTP POST</td></tr>
+      <tr><td>Who decides to call</td><td>The developer's code, deterministically</td><td>The model, based on the conversation and the tool descriptions</td></tr>
+      <tr><td>Error handling</td><td>Code handles status codes</td><td>The model reads the error text and decides what to do</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="loop">
+  <h2><span class="n">02</span>How a model actually uses a tool</h2>
+  <p>This is the most important idea to get right, because it explains every design rule later. <strong>The model never calls your server.</strong> The application around the model (the host) does. The model only writes a structured request saying "call this tool with these arguments", and the host carries it out.</p>
+  <figure>
+    <div class="frame">
+      <svg class="d" viewBox="0 0 780 300" style="min-width:640px" role="img" aria-label="The agent loop: the host sends the conversation and tool descriptions to the model, the model replies with a tool call, the host sends it to the MCP server, puts the result back into the conversation, and the model writes the final answer." xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="lp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker></defs>
+        <rect x="20" y="110" width="120" height="70" rx="8" class="b"/>
+        <text x="80" y="140" class="t" text-anchor="middle">Person</text>
+        <text x="80" y="158" class="s" text-anchor="middle">asks a question</text>
+        <rect x="230" y="40" width="250" height="220" rx="10" class="zone"/>
+        <text x="244" y="58" class="zone-t">HOST (e.g. Copilot in IntelliJ)</text>
+        <rect x="250" y="76" width="210" height="62" rx="8" class="b-acc"/>
+        <text x="355" y="102" class="t" text-anchor="middle">LLM (the model)</text>
+        <text x="355" y="120" class="s" text-anchor="middle">reads text, writes text</text>
+        <rect x="250" y="176" width="210" height="62" rx="8" class="b"/>
+        <text x="355" y="202" class="t" text-anchor="middle">MCP client</text>
+        <text x="355" y="220" class="s" text-anchor="middle">runs the tool calls</text>
+        <rect x="590" y="176" width="170" height="62" rx="8" class="b-hi"/>
+        <text x="675" y="202" class="t" text-anchor="middle">MCP server</text>
+        <text x="675" y="220" class="s" text-anchor="middle">prequal tools</text>
+        <rect x="590" y="70" width="170" height="62" rx="8" class="b-api"/>
+        <text x="675" y="96" class="t" text-anchor="middle">Prequal API</text>
+        <text x="675" y="114" class="s" text-anchor="middle">unchanged</text>
+        <line x1="140" y1="140" x2="248" y2="105" class="e" marker-end="url(#lp)"/>
+        <text x="190" y="112" class="et" text-anchor="middle">1</text>
+        <path d="M330 138 L330 174" class="e" marker-end="url(#lp)"/>
+        <text x="318" y="160" class="et" text-anchor="end">2 tool call</text>
+        <line x1="460" y1="200" x2="588" y2="200" class="e" marker-end="url(#lp)"/>
+        <text x="524" y="192" class="et" text-anchor="middle">3 tools/call</text>
+        <line x1="675" y1="176" x2="675" y2="134" class="e" marker-end="url(#lp)"/>
+        <text x="684" y="158" class="et">4 REST</text>
+        <line x1="588" y1="222" x2="462" y2="222" class="e-dash" marker-end="url(#lp)"/>
+        <text x="524" y="238" class="et" text-anchor="middle">5 result</text>
+        <path d="M380 174 L380 140" class="e-dash" marker-end="url(#lp)"/>
+        <text x="390" y="160" class="et">6 result into context</text>
+        <line x1="248" y1="120" x2="142" y2="160" class="e-dash" marker-end="url(#lp)"/>
+        <text x="190" y="158" class="et" text-anchor="middle">7 answer</text>
+      </svg>
+    </div>
+    <figcaption>Steps 2 to 6 can repeat several times in one answer: get offers, then accept, then check status. Each repetition is one turn of the "agent loop".</figcaption>
+  </figure>
+  <ol>
+    <li>When the conversation starts, the host fetches the tool list from each connected MCP server and puts the tool names, descriptions and input schemas into the model's context, next to the conversation.</li>
+    <li>The person asks something. The model reads the conversation and the tool descriptions. If a tool fits, it replies with a structured tool call: tool name plus JSON arguments.</li>
+    <li>The host (through its MCP client) sends that call to the MCP server.</li>
+    <li>The MCP server runs it, for us by calling the prequal REST API.</li>
+    <li>The result comes back to the host.</li>
+    <li>The host appends the result to the conversation and asks the model to continue.</li>
+    <li>The model either calls another tool or writes the answer.</li>
+  </ol>
+  <h3>Consequences you should remember</h3>
+  <ul>
+    <li><strong>Descriptions are the interface.</strong> The model chooses tools only from names, descriptions and schemas. A vague description causes wrong calls. This is why we spend more effort on descriptions than on code.</li>
+    <li><strong>Results become model input.</strong> Whatever you return is read by the model and may be shown to the person or stored by the host. Return only what is needed; never return data the person should not see.</li>
+    <li><strong>The model can be wrong or misled.</strong> It can choose the wrong tool, invent an argument, or follow instructions hidden in text it read (prompt injection). Every rule that matters must be enforced in server code, not just described.</li>
+    <li><strong>Context is limited.</strong> Every tool description occupies space in the model's context. Fifty similar tools make the model worse at choosing. Expose business tasks, not every endpoint.</li>
+    <li><strong>The model has no memory between conversations.</strong> It knows only what the descriptions and results tell it in this conversation.</li>
+  </ul>
+</section>
+
+<section id="roles">
+  <h2><span class="n">03</span>The roles: host, client, server and the rest</h2>
+  <figure>
+    <div class="frame">
+      <svg class="d" viewBox="0 0 800 330" style="min-width:660px" role="img" aria-label="Big picture: a host contains the model and one MCP client per server; clients connect to MCP servers; servers call backend APIs; an authorization server issues tokens and a gateway sits in front of remote servers." xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="bp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker></defs>
+        <rect x="14" y="30" width="220" height="270" rx="10" class="zone"/>
+        <text x="28" y="48" class="zone-t">HOST APPLICATION</text>
+        <rect x="34" y="62" width="180" height="54" rx="8" class="b-acc"/>
+        <text x="124" y="86" class="t" text-anchor="middle">Model (LLM)</text>
+        <text x="124" y="103" class="s" text-anchor="middle">decides which tool</text>
+        <rect x="34" y="140" width="180" height="44" rx="8" class="b"/>
+        <text x="124" y="167" class="t" text-anchor="middle">MCP client #1</text>
+        <rect x="34" y="200" width="180" height="44" rx="8" class="b"/>
+        <text x="124" y="227" class="t" text-anchor="middle">MCP client #2</text>
+        <text x="124" y="280" class="s" text-anchor="middle">one client per server</text>
+        <rect x="300" y="124" width="120" height="76" rx="8" class="b-acc"/>
+        <text x="360" y="152" class="t" text-anchor="middle">Gateway</text>
+        <text x="360" y="170" class="s" text-anchor="middle">Apigee / Kong</text>
+        <text x="360" y="186" class="s" text-anchor="middle">auth, quota</text>
+        <rect x="300" y="20" width="120" height="62" rx="8" class="b-acc"/>
+        <text x="360" y="46" class="t" text-anchor="middle">Authorization</text>
+        <text x="360" y="62" class="t" text-anchor="middle">server (IdP)</text>
+        <rect x="476" y="124" width="150" height="76" rx="8" class="b-hi"/>
+        <text x="551" y="152" class="t" text-anchor="middle">MCP server</text>
+        <text x="551" y="170" class="s" text-anchor="middle">Apply prequal</text>
+        <text x="551" y="186" class="s" text-anchor="middle">(remote, HTTP)</text>
+        <rect x="476" y="236" width="150" height="58" rx="8" class="b"/>
+        <text x="551" y="260" class="t" text-anchor="middle">Other MCP server</text>
+        <text x="551" y="278" class="s" text-anchor="middle">e.g. Jira, GitHub</text>
+        <rect x="666" y="110" width="120" height="44" rx="8" class="b-api"/>
+        <text x="726" y="137" class="t" text-anchor="middle">Prequal API</text>
+        <rect x="666" y="170" width="120" height="44" rx="8" class="b-api"/>
+        <text x="726" y="197" class="t" text-anchor="middle">Status API</text>
+        <line x1="214" y1="162" x2="298" y2="162" class="e" marker-end="url(#bp)"/>
+        <text x="256" y="154" class="et" text-anchor="middle">MCP</text>
+        <line x1="420" y1="162" x2="474" y2="162" class="e" marker-end="url(#bp)"/>
+        <path d="M214 222 C380 222 380 265 474 265" class="e" marker-end="url(#bp)"/>
+        <path d="M214 150 C250 100 260 60 298 52" class="e-dash" marker-end="url(#bp)"/>
+        <text x="236" y="96" class="et">login, token</text>
+        <line x1="626" y1="150" x2="664" y2="134" class="e" marker-end="url(#bp)"/>
+        <line x1="626" y1="176" x2="664" y2="190" class="e" marker-end="url(#bp)"/>
+      </svg>
+    </div>
+    <div class="legend"><span><i class="sw hi"></i>What we build</span><span><i class="sw acc"></i>Platform we already have or need</span><span><i class="sw api"></i>Existing APIs</span></div>
+  </figure>
+  <div class="tbl"><table>
+    <thead><tr><th>Role</th><th>What it is</th><th>Examples</th><th>Who builds it</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Host</strong></td><td>The AI application a person uses. Contains the model and manages the conversation, user approvals, and connections.</td><td>Claude desktop, Claude Code, GitHub Copilot in IntelliJ or VS Code, an internal agent platform</td><td>A vendor or an internal platform team</td></tr>
+      <tr><td><strong>MCP client</strong></td><td>The component inside the host that speaks MCP to one server.</td><td>Built into every host</td><td>Comes with the host</td></tr>
+      <tr><td><strong>MCP server</strong></td><td>Publishes tools (and optionally resources and prompts) and executes them.</td><td>Our <code>apply-mcp-server</code></td><td><strong>Us</strong></td></tr>
+      <tr><td><strong>Authorization server</strong></td><td>Logs people or services in and issues access tokens. In an enterprise this is usually the corporate identity provider.</td><td>Corporate IdP (for example PingFederate, Microsoft Entra ID, Okta)</td><td>Identity team</td></tr>
+      <tr><td><strong>Gateway</strong></td><td>Front door in front of remote MCP servers: authentication, rate limits, routing, analytics.</td><td>Apigee today, possibly Kong</td><td>API platform team</td></tr>
+      <tr><td><strong>Backend</strong></td><td>The systems the tools act on.</td><td>Prequal, accept and status APIs on PCF</td><td>Existing API teams</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Local versus remote servers.</strong> A <em>local</em> server runs on the user's own machine, started by the host as a child process. A <em>remote</em> server is a web service that many users reach over the network. Enterprise capabilities like prequal are always remote servers: one deployment, central security, central logging.</p>
+</section>
+
+<section id="protocol">
+  <h2><span class="n">04</span>The protocol: JSON-RPC 2.0</h2>
+  <p>MCP messages use <strong>JSON-RPC 2.0</strong>, a small, old and very simple standard. There are three kinds of message:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Kind</th><th>Shape</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Request</td><td><code>{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{…}}</code></td><td>Do something and answer me. The <code>id</code> links the answer to the request.</td></tr>
+      <tr><td>Response</td><td><code>{"jsonrpc":"2.0","id":7,"result":{…}}</code> or <code>"error":{…}</code></td><td>The answer to request 7.</td></tr>
+      <tr><td>Notification</td><td><code>{"jsonrpc":"2.0","method":"notifications/progress","params":{…}}</code></td><td>Information only; no answer expected (no <code>id</code>).</td></tr>
+    </tbody>
+  </table></div>
+  <p>Compare with REST: instead of many URLs and HTTP verbs, everything goes to <strong>one URL</strong> (for us <code>/mcp</code>) as an HTTP POST, and the <code>method</code> field says what to do.</p>
+  <h3>The methods a tool server deals with (2026-07-28)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Method</th><th>Purpose</th><th>Do we use it?</th></tr></thead>
+    <tbody>
+      <tr><td><code>server/discover</code></td><td>Optional first call: which protocol versions and capabilities the server supports. Servers must implement it.</td><td>Provided by the SDK</td></tr>
+      <tr><td><code>tools/list</code></td><td>Returns the tool catalogue: names, descriptions, input and output schemas, annotations.</td><td>Yes</td></tr>
+      <tr><td><code>tools/call</code></td><td>Runs one tool with arguments and returns the result.</td><td>Yes, the main one</td></tr>
+      <tr><td><code>resources/list</code>, <code>resources/read</code>, <code>resources/templates/list</code></td><td>Read-only content the host can load as context (documents, reference data).</td><td>Later: disclosures, product terms</td></tr>
+      <tr><td><code>prompts/list</code>, <code>prompts/get</code></td><td>Reusable prompt templates a user can pick.</td><td>Optional</td></tr>
+      <tr><td><code>completion/complete</code></td><td>Argument auto-completion in user interfaces.</td><td>No</td></tr>
+      <tr><td><code>subscriptions/listen</code></td><td>One long-lived stream for change notifications (for example "tool list changed").</td><td>No</td></tr>
+      <tr><td><code>tasks/get</code>, <code>tasks/update</code></td><td>Long-running operations, through the official tasks extension.</td><td>Possibly later</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Errors: two different kinds</h3>
+  <ul>
+    <li><strong>Protocol errors</strong> are JSON-RPC <code>error</code> objects: unknown method, malformed request, unsupported protocol version. The model usually never sees these.</li>
+    <li><strong>Tool errors</strong> are normal results with <code>isError: true</code> and an explanation in the content. The model reads them and can recover, for example by asking the applicant for missing consent. This is how our server reports business rule violations.</li>
+  </ul>
+</section>
+
+<section id="primitives">
+  <h2><span class="n">05</span>What a server can offer: tools, resources, prompts</h2>
+  <div class="cards">
+    <div class="card"><div class="t1">Tools</div><div class="e1">model-controlled</div><p>Actions the model decides to call. Can read or change things. Prequal: get offers, accept offer, get status. Almost all enterprise value is here.</p></div>
+    <div class="card"><div class="t1">Resources</div><div class="e1">application-controlled</div><p>Read-only content identified by a URI that the host may load into context. Prequal: the soft-inquiry disclosure text, product terms, a glossary of decision reasons.</p></div>
+    <div class="card"><div class="t1">Prompts</div><div class="e1">user-controlled</div><p>Named, parameterised instructions a person picks from a menu. Prequal: "Run a prequalification for a customer on the phone".</p></div>
+  </div>
+  <p>Tools are what leadership means by "exposing our APIs to agents". Resources become useful for compliance content that must be presented exactly. Prompts are a convenience for internal users.</p>
+  <h3>What a tool result can contain</h3>
+  <ul>
+    <li><code>content</code>: a list of items (text, images, links to resources). This is what models read today.</li>
+    <li><code>structuredContent</code>: a JSON value matching the tool's <code>outputSchema</code>, for hosts and programs that want machine-checkable output.</li>
+    <li><code>isError</code>: true when the call failed in a way the model should read and act on.</li>
+    <li><code>resultType</code>: <code>"complete"</code> normally, or <code>"input_required"</code> when the server needs more input first (section 08).</li>
+  </ul>
+</section>
+
+<section id="transports">
+  <h2><span class="n">06</span>Transports: how the messages travel</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Transport</th><th>How it works</th><th>Use it for</th></tr></thead>
+    <tbody>
+      <tr><td><strong>stdio</strong></td><td>The host starts the server as a child process on the same machine and exchanges messages through standard input and output.</td><td>Personal and developer tools on one machine. Not for enterprise services.</td></tr>
+      <tr class="pick"><td><strong>Streamable HTTP</strong></td><td>The server is a web service with one endpoint. The client sends each message as an HTTP POST. The server answers with plain JSON, or with a stream of server-sent events when it needs to send progress before the final result.</td><td>Every remote, shared server. This is ours.</td></tr>
+      <tr><td>HTTP+SSE (old)</td><td>The 2024 transport with two endpoints.</td><td>Deprecated. Do not use.</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Streamable HTTP request headers (2026-07-28)</h3>
+  <div class="code"><div class="bar">HTTP REQUEST</div><pre>POST /mcp HTTP/1.1
+Host: mcp.apply.example.com
+Content-Type: application/json
+Accept: application/json, text/event-stream
+Authorization: Bearer eyJhbGciOi…          <span class="c"># OAuth access token (document 2)</span>
+Mcp-Method: tools/call                       <span class="c"># required: lets gateways route without reading the body</span>
+Mcp-Name: prequal_get_offers                 <span class="c"># required: the tool name, so a gateway can authorise per tool</span>
+
+{"jsonrpc":"2.0","id":7,"method":"tools/call",
+ "params":{"name":"prequal_get_offers","arguments":{…},
+   "_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28",
+            "io.modelcontextprotocol/clientInfo":{"name":"copilot","version":"…"}}}}</pre></div>
+  <p>The two new headers matter to us. Apigee or Kong can now apply policy per tool, for example "only the call-centre agent app may call <code>prequal_accept_offer</code>", by reading a header instead of parsing JSON.</p>
+</section>
+
+<section id="lifecycle">
+  <h2><span class="n">07</span>Lifecycle: stateful before, stateless now</h2>
+  <p>The biggest change in the 2026-07-28 specification is that MCP became <strong>stateless</strong>. Our proof of concept is built on Spring AI 1.1, which speaks the earlier 2025-06-18 version. Both are shown so you can recognise them.</p>
+  <figure><div class="frame"><svg class="d" viewBox="0 0 620 664" style="min-width:620px" role="img" aria-label="Message sequence in the 2025-06-18 protocol with initialize and sessions, compared with the 2026-07-28 stateless protocol" xmlns="http://www.w3.org/2000/svg"><defs><marker id="m1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="m1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker><marker id="m1c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah3"/></marker></defs><rect x="10.0" y="6" width="140" height="46" rx="6" class="lane-box"/><text x="80" y="26" class="lane-t" text-anchor="middle">Host + model</text><text x="80" y="42" class="lane-s" text-anchor="middle">Copilot, Claude</text><line x1="80" y1="52" x2="80" y2="658" class="life"/><rect x="240.0" y="6" width="140" height="46" rx="6" class="lane-box"/><text x="310" y="26" class="lane-t" text-anchor="middle">MCP client</text><text x="310" y="42" class="lane-s" text-anchor="middle">inside the host</text><line x1="310" y1="52" x2="310" y2="658" class="life"/><rect x="470.0" y="6" width="140" height="46" rx="6" class="lane-box lane-hi"/><text x="540" y="26" class="lane-t" text-anchor="middle">MCP server</text><text x="540" y="42" class="lane-s" text-anchor="middle">our Spring Boot app</text><line x1="540" y1="52" x2="540" y2="658" class="life"/><rect x="6" y="86" width="608" height="20" rx="4" class="phase"/><text x="16" y="100" class="phase-t">A. Protocol 2025-06-18 (what our POC speaks today): stateful sessions</text><line x1="313" y1="142" x2="536" y2="142" class="msg-req" marker-end="url(#m1a)"/><text x="425.0" y="136" class="msg-t" text-anchor="middle">initialize (version, capabilities)</text><line x1="537" y1="172" x2="314" y2="172" class="msg-res" marker-end="url(#m1b)"/><text x="425.0" y="166" class="msg-t" text-anchor="middle">result + header Mcp-Session-Id</text><line x1="313" y1="202" x2="536" y2="202" class="msg-req" marker-end="url(#m1a)"/><text x="425.0" y="196" class="msg-t" text-anchor="middle">notifications/initialized</text><line x1="313" y1="232" x2="536" y2="232" class="msg-req" marker-end="url(#m1a)"/><text x="425.0" y="226" class="msg-t" text-anchor="middle">tools/list   (Mcp-Session-Id)</text><line x1="537" y1="262" x2="314" y2="262" class="msg-res" marker-end="url(#m1b)"/><text x="425.0" y="256" class="msg-t" text-anchor="middle">3 tools</text><line x1="83" y1="292" x2="306" y2="292" class="msg-req" marker-end="url(#m1a)"/><text x="195.0" y="286" class="msg-t" text-anchor="middle">model decides: call prequal_get_offers</text><line x1="313" y1="322" x2="536" y2="322" class="msg-req" marker-end="url(#m1a)"/><text x="425.0" y="316" class="msg-t" text-anchor="middle">tools/call   (Mcp-Session-Id)</text><line x1="537" y1="352" x2="314" y2="352" class="msg-res" marker-end="url(#m1b)"/><text x="425.0" y="346" class="msg-t" text-anchor="middle">result</text><rect x="6" y="362" width="608" height="20" rx="4" class="phase"/><text x="16" y="376" class="phase-t">B. Protocol 2026-07-28: stateless, every request stands alone</text><line x1="313" y1="418" x2="536" y2="418" class="msg-req" marker-end="url(#m1a)"/><text x="425.0" y="412" class="msg-t" text-anchor="middle">server/discover (optional)</text><line x1="537" y1="448" x2="314" y2="448" class="msg-res" marker-end="url(#m1b)"/><text x="425.0" y="442" class="msg-t" text-anchor="middle">versions, capabilities, identity</text><line x1="313" y1="478" x2="536" y2="478" class="msg-req" marker-end="url(#m1a)"/><text x="425.0" y="472" class="msg-t" text-anchor="middle">tools/list   Mcp-Method: tools/list</text><line x1="537" y1="508" x2="314" y2="508" class="msg-res" marker-end="url(#m1b)"/><text x="425.0" y="502" class="msg-t" text-anchor="middle">3 tools + ttlMs, cacheScope</text><line x1="83" y1="538" x2="306" y2="538" class="msg-req" marker-end="url(#m1a)"/><text x="195.0" y="532" class="msg-t" text-anchor="middle">model decides: call prequal_get_offers</text><line x1="313" y1="568" x2="536" y2="568" class="msg-req" marker-end="url(#m1a)"/><text x="425.0" y="562" class="msg-t" text-anchor="middle">tools/call   Mcp-Name: prequal_get_offers</text><rect x="250" y="576" width="350" height="24" rx="4" class="note-box"/><text x="425.0" y="592" class="note-t" text-anchor="middle">_meta carries protocolVersion + clientInfo on every request</text><line x1="537" y1="638" x2="314" y2="638" class="msg-res" marker-end="url(#m1b)"/><text x="425.0" y="632" class="msg-t" text-anchor="middle">result  resultType: complete</text></svg></div>
+    <figcaption>In the old model the server had to remember each session, which needs sticky load balancing or a shared session store. In the new model any instance can answer any request, which suits PCF horizontal scaling directly.</figcaption></figure>
+  <h3>What changed in 2026-07-28 and what it means for us</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Change</th><th>Before</th><th>Now</th><th>Impact on apply-mcp-server</th></tr></thead>
+    <tbody>
+      <tr><td>Sessions</td><td><code>initialize</code> handshake, <code>Mcp-Session-Id</code> header</td><td>Removed. Each request carries version and client info in <code>_meta</code>.</td><td>Our tools already keep no session state. State lives in explicit ids (<code>prequalId</code>, <code>applicationId</code>), which is exactly the new pattern.</td></tr>
+      <tr><td>Gateway headers</td><td>Gateway had to parse the body</td><td><code>Mcp-Method</code> and <code>Mcp-Name</code> required</td><td>Per-tool policy in Apigee or Kong becomes simple.</td></tr>
+      <tr><td>Server-to-client requests</td><td>Server opened requests to the client (elicitation, sampling)</td><td>Multi round-trip requests (MRTR)</td><td>Use MRTR for accept confirmation once supported (section 08).</td></tr>
+      <tr><td>List caching</td><td>None</td><td><code>ttlMs</code>, <code>cacheScope</code>, deterministic order</td><td>Hosts can cache our tool list; keep order stable.</td></tr>
+      <tr><td>Long-running work</td><td>Experimental tasks in core</td><td>Official <code>tasks</code> extension with polling</td><td>Useful if an application decision ever takes minutes.</td></tr>
+      <tr><td>Deprecated</td><td>Roots, Sampling, Logging; HTTP+SSE; Dynamic Client Registration</td><td>Kept for at least 12 months, then removed</td><td>We use none of them.</td></tr>
+      <tr><td>Authorization</td><td>OAuth 2.1 profile</td><td>Tightened: issuer validation (RFC 9207), Client ID Metadata Documents preferred</td><td>Covered in document 2.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn"><p><b>Version note for our stack.</b> Spring AI 1.1 on Spring Boot 3.5 speaks 2025-06-18. Spring AI 2.0 (generally available June 2026, Spring Boot 4, MCP Java SDK 2.0) is the line to move to. Its documentation offers a <code>STATELESS</code> server protocol mode. Confirm 2026-07-28 support in the Java SDK release notes before committing to a date. Clients negotiate the protocol version, so a 2025-06-18 server keeps working with current hosts during the transition.</p></div>
+  <p>Spring AI already lets you choose <code>spring.ai.mcp.server.protocol: STATELESS</code> instead of <code>STREAMABLE</code>. For a PCF deployment with several instances behind a round-robin router, stateless is the right choice even before the 2026 protocol, because no instance needs to remember a session.</p>
+</section>
+
+<section id="mrtr">
+  <h2><span class="n">08</span>Asking the person mid-call: multi round-trip requests</h2>
+  <p>Sometimes a tool needs input from the person before it can finish: a confirmation, a missing value, a disclosure acknowledgement. In 2026-07-28 this works as a <strong>multi round-trip request (MRTR)</strong>: the server returns <code>resultType: "input_required"</code> with the questions, the host asks the person, and the client sends the original request again with the answers.</p>
+  <figure><div class="frame"><svg class="d" viewBox="0 0 730 446" style="min-width:640px" role="img" aria-label="Multi round-trip request: the server asks the host for the applicant's confirmation before accepting the offer" xmlns="http://www.w3.org/2000/svg"><defs><marker id="m2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker><marker id="m2b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah2"/></marker><marker id="m2c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" class="ah3"/></marker></defs><rect x="10.0" y="6" width="140" height="46" rx="6" class="lane-box"/><text x="80" y="26" class="lane-t" text-anchor="middle">Applicant</text><text x="80" y="42" class="lane-s" text-anchor="middle">person</text><line x1="80" y1="52" x2="80" y2="440" class="life"/><rect x="200.0" y="6" width="140" height="46" rx="6" class="lane-box"/><text x="270" y="26" class="lane-t" text-anchor="middle">Host + model</text><text x="270" y="42" class="lane-s" text-anchor="middle">Copilot, Claude</text><line x1="270" y1="52" x2="270" y2="440" class="life"/><rect x="390.0" y="6" width="140" height="46" rx="6" class="lane-box lane-hi"/><text x="460" y="26" class="lane-t" text-anchor="middle">MCP server</text><text x="460" y="42" class="lane-s" text-anchor="middle">prequal tools</text><line x1="460" y1="52" x2="460" y2="440" class="life"/><rect x="580.0" y="6" width="140" height="46" rx="6" class="lane-box lane-ext"/><text x="650" y="26" class="lane-t" text-anchor="middle">Prequal API</text><text x="650" y="42" class="lane-s" text-anchor="middle">via Apigee</text><line x1="650" y1="52" x2="650" y2="440" class="life"/><line x1="83" y1="106" x2="266" y2="106" class="msg-req" marker-end="url(#m2a)"/><text x="175.0" y="100" class="msg-t" text-anchor="middle">“I'll take the Cashback Card”</text><line x1="273" y1="136" x2="456" y2="136" class="msg-req" marker-end="url(#m2a)"/><text x="365.0" y="130" class="msg-t" text-anchor="middle">tools/call prequal_accept_offer</text><path d="M460 158 h-26 v16 h24" class="self" marker-end="url(#m2a)"/><text x="428" y="170" class="msg-t" text-anchor="end">needs explicit confirmation</text><line x1="457" y1="210" x2="274" y2="210" class="msg-res" marker-end="url(#m2b)"/><text x="365.0" y="204" class="msg-t" text-anchor="middle">resultType: input_required + inputRequests</text><line x1="267" y1="240" x2="84" y2="240" class="msg-res" marker-end="url(#m2b)"/><text x="175.0" y="234" class="msg-t" text-anchor="middle">confirm: Cashback Card, $3,000, 27.99% APR?</text><line x1="83" y1="270" x2="266" y2="270" class="msg-req" marker-end="url(#m2a)"/><text x="175.0" y="264" class="msg-t" text-anchor="middle">Yes, I confirm</text><line x1="273" y1="300" x2="456" y2="300" class="msg-req" marker-end="url(#m2a)"/><text x="365.0" y="294" class="msg-t" text-anchor="middle">retry tools/call + inputResponses</text><line x1="463" y1="330" x2="646" y2="330" class="msg-req" marker-end="url(#m2a)"/><text x="555.0" y="324" class="msg-t" text-anchor="middle">POST /offers/OF-1/accept  Idempotency-Key</text><line x1="647" y1="360" x2="464" y2="360" class="msg-res" marker-end="url(#m2b)"/><text x="555.0" y="354" class="msg-t" text-anchor="middle">201 APP-55001</text><line x1="457" y1="390" x2="274" y2="390" class="msg-res" marker-end="url(#m2b)"/><text x="365.0" y="384" class="msg-t" text-anchor="middle">resultType: complete  ACCEPTED</text><line x1="267" y1="420" x2="84" y2="420" class="msg-res" marker-end="url(#m2b)"/><text x="175.0" y="414" class="msg-t" text-anchor="middle">“Application APP-55001 created”</text></svg></div>
+    <figcaption>The confirmation is collected by the host's own interface, not by the model, so the model cannot answer it on the person's behalf. This is stronger than a boolean <code>applicantConfirmed</code> argument.</figcaption></figure>
+  <p>Our proof of concept uses an <code>applicantConfirmed</code> argument because MRTR needs both a 2026-07-28 server SDK and host support. Moving accept confirmation to MRTR is on the roadmap (document 4). Keep the server-side check either way.</p>
+</section>
+
+<section id="extensions">
+  <h2><span class="n">09</span>Extensions and the feature lifecycle</h2>
+  <p>The core protocol is deliberately small. Optional capabilities are published as <strong>extensions</strong> that clients and servers advertise in their capabilities. Three official extensions matter for an enterprise:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Extension</th><th>What it adds</th><th>Relevance</th></tr></thead>
+    <tbody>
+      <tr><td><code>io.modelcontextprotocol/tasks</code></td><td>Long-running operations: the server returns a task handle; the client polls with <code>tasks/get</code> and can send input with <code>tasks/update</code>.</td><td>If a decision or document check takes minutes.</td></tr>
+      <tr><td>MCP Apps</td><td>Servers can provide interactive user interface components the host renders.</td><td>Possibly for displaying offers and disclosures richly. Not needed now.</td></tr>
+      <tr><td>Enterprise-Managed Authorization (EMA)</td><td>The corporate identity provider decides centrally which employees may use which MCP servers, without per-server consent screens.</td><td>High. Covered in document 2.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Since 2026-07-28 the specification has a formal lifecycle: features move from Active to Deprecated to Removed, with at least twelve months in Deprecated. This gives an enterprise a predictable upgrade window.</p>
+</section>
+
+<section id="tooldesign">
+  <h2><span class="n">10</span>Anatomy of a good enterprise tool</h2>
+  <div class="code"><div class="bar">ONE ENTRY FROM tools/list</div><pre>{
+  <span class="k">"name"</span>: <span class="s">"prequal_accept_offer"</span>,                 <span class="c">// stable id, product_action, never renamed</span>
+  <span class="k">"title"</span>: <span class="s">"Accept a prequalified credit card offer"</span>, <span class="c">// for people</span>
+  <span class="k">"description"</span>: <span class="s">"Accept one prequalified credit card offer and create
+     a credit card application. This cannot be undone. Only call this after …
+     Idempotency: … retry with the SAME idempotencyKey …"</span>,   <span class="c">// for the model: what, when, prerequisites, retry rule</span>
+  <span class="k">"inputSchema"</span>: { <span class="k">"type"</span>: <span class="s">"object"</span>, <span class="k">"properties"</span>: { … }, <span class="k">"required"</span>: [ … ] },
+  <span class="k">"outputSchema"</span>: { … },                               <span class="c">// optional: shape of structuredContent</span>
+  <span class="k">"annotations"</span>: { <span class="k">"readOnlyHint"</span>: false, <span class="k">"destructiveHint"</span>: true,
+                   <span class="k">"idempotentHint"</span>: true, <span class="k">"openWorldHint"</span>: false }
+}</pre></div>
+  <h3>Rules we follow (and why)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Rule</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>One tool per business task, not per endpoint</td><td>Fewer, clearer choices for the model. Our three tools map to the three steps of prequal.</td></tr>
+      <tr><td>Name as <code>product_action</code> in snake_case, never rename</td><td>Names are an interface. Renaming breaks agents and prompts that rely on them.</td></tr>
+      <tr><td>Description says what, when, prerequisites, what comes next, retry rule</td><td>The model has no other source. Write for a reader with zero Synchrony knowledge.</td></tr>
+      <tr><td>Flat inputs with constraints in the schema</td><td>Models fill flat objects more reliably. Formats and enums prevent many errors.</td></tr>
+      <tr><td>Plain values in results, no internal codes</td><td>The model would guess what <code>A1</code> means and could tell an applicant something wrong.</td></tr>
+      <tr><td>A <code>nextStep</code> in every result</td><td>Guides the model through the business process without the host knowing it.</td></tr>
+      <tr><td>Errors as instructions</td><td>"Consent missing; ask the applicant…" lets the model recover correctly.</td></tr>
+      <tr><td>Annotations set honestly</td><td>Hosts use <code>destructiveHint</code> and <code>readOnlyHint</code> to decide when to ask the person for approval. They are hints, not security.</td></tr>
+      <tr><td>Rules enforced in code</td><td>A description guides a well-behaved model; code stops a misled one.</td></tr>
+      <tr><td>Minimal data out, no PII echoed</td><td>Results go into the model's context and possibly logs at the host.</td></tr>
+      <tr><td>State through explicit ids bound to the caller</td><td>Required by the stateless protocol; binding prevents one user using another user's id.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="clients">
+  <h2><span class="n">11</span>Who will call our server</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Kind of client</th><th>Examples</th><th>Typical identity</th></tr></thead>
+    <tbody>
+      <tr><td>AI assistants used by employees</td><td>Claude, GitHub Copilot in IntelliJ and VS Code, other enterprise assistants</td><td>The employee (single sign-on)</td></tr>
+      <tr><td>Internal agent platforms</td><td>A call-centre assistant, an operations agent built with Spring AI or another framework</td><td>The platform as a service, sometimes acting for an employee</td></tr>
+      <tr><td>Developer and test tools</td><td>MCP Inspector, integration tests</td><td>Test credentials in lower environments</td></tr>
+      <tr><td>External partners (future)</td><td>A retail partner's agent</td><td>Partner organisation; needs a separate review</td></tr>
+    </tbody>
+  </table></div>
+  <p>Hosts differ in which parts of the specification they support (OAuth flows, MRTR, extensions). Design the server so that the safe path works with the minimum: tools plus OAuth bearer tokens.</p>
+</section>
+
+<section id="sdks">
+  <h2><span class="n">12</span>SDKs, languages and governance</h2>
+  <p>MCP is language-neutral. Official SDKs exist for TypeScript, Python, Go, C#, Java, Kotlin, Rust and others. The MCP project's 2026-07-28 announcement lists TypeScript, Python, Go and C# as Tier 1 SDKs that supported the new version at release. The Java SDK is built together with the Spring team and is integrated into Spring AI.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Option</th><th>Strengths</th><th>For us</th></tr></thead>
+    <tbody>
+      <tr class="pick"><td>Java: Spring AI MCP server</td><td>Annotation-based tools (<code>@McpTool</code>), Spring Security, Actuator, our existing build, test and deployment pipeline</td><td>Chosen. Document 3 explains why.</td></tr>
+      <tr><td>Python: official SDK (FastMCP style)</td><td>Fastest to prototype; largest example base</td><td>Good for learning; would be a new runtime to support on PCF</td></tr>
+      <tr><td>TypeScript: official SDK</td><td>Reference implementation; newest features first</td><td>New runtime for the team</td></tr>
+      <tr><td>No code: gateway-generated (Apigee MCP proxy, Kong)</td><td>Turns OpenAPI operations into tools</td><td>For simple read-only tools later</td></tr>
+    </tbody>
+  </table></div>
+  <h3>Who owns the standard</h3>
+  <p>Anthropic created MCP in November 2024 and in December 2025 donated it to the <strong>Agentic AI Foundation</strong> under the Linux Foundation, with other large AI and technology companies as members. Changes go through public specification enhancement proposals (SEPs). For an enterprise this means MCP is an open, vendor-neutral standard, not a single vendor's product.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Version</th><th>Headline</th></tr></thead>
+    <tbody>
+      <tr><td>2024-11-05</td><td>First release: tools, resources, prompts; stdio and HTTP+SSE</td></tr>
+      <tr><td>2025-03-26</td><td>Streamable HTTP; first OAuth 2.1 authorization; tool annotations</td></tr>
+      <tr><td>2025-06-18</td><td>Authorization reworked: server as OAuth resource server, protected resource metadata, resource indicators; structured tool output; elicitation</td></tr>
+      <tr><td>2025-11-25</td><td>Client ID Metadata Documents; experimental tasks; URL-mode elicitation</td></tr>
+      <tr><td>2026-07-28</td><td>Stateless core; <code>Mcp-Method</code>/<code>Mcp-Name</code> headers; MRTR; extensions framework; deprecation policy</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="recipe">
+  <h2><span class="n">13</span>How to build any MCP server: the recipe</h2>
+  <ol class="steps">
+    <li><div><b>Pick the business tasks</b><span>List what an agent should be able to do, in business words. Group endpoints into tasks. Mark each task read-only or state-changing.</span></div></li>
+    <li><div><b>Write the tool contract before code</b><span>Name, description, inputs with constraints, outputs, errors, retry rule, prerequisites. Review it with someone who does not know the API.</span></div></li>
+    <li><div><b>Build the adapter</b><span>A client for the existing APIs behind an interface, with a deterministic mock for development.</span></div></li>
+    <li><div><b>Build the tool layer</b><span>Validation, rules enforced in code, translation of codes, minimal results, a next step in each result.</span></div></li>
+    <li><div><b>Expose over Streamable HTTP</b><span>One endpoint, stateless, behind the gateway.</span></div></li>
+    <li><div><b>Secure it</b><span>OAuth bearer tokens validated at the gateway and the server; per-tool authorization; no token passthrough (document 2).</span></div></li>
+    <li><div><b>Test at three levels</b><span>Unit and contract tests; protocol tests with an MCP client; conversation tests with a real model.</span></div></li>
+    <li><div><b>Operate it</b><span>Logs without PII, traces across gateway, server and APIs, metrics per tool, alerting.</span></div></li>
+  </ol>
+  <p>Our repository already implements steps 1 to 5 and 7 for prequal with a mock backend. Documents 2 to 4 cover security, production architecture, and the path from here to production.</p>
+</section>
+
+<section id="glossary">
+  <h2><span class="n">14</span>Glossary</h2>
+  <dl class="gl">
+    <dt>LLM</dt><dd>Large language model: the AI that reads and writes text.</dd>
+    <dt>Agent</dt><dd>A model running in a loop with tools, able to take several steps towards a goal.</dd>
+    <dt>Host</dt><dd>The application containing the model, for example Copilot in IntelliJ.</dd>
+    <dt>MCP client</dt><dd>The part of the host that connects to one MCP server.</dd>
+    <dt>MCP server</dt><dd>The service that publishes and executes tools. What we build.</dd>
+    <dt>Tool</dt><dd>A named action with a description and input schema that a model can call.</dd>
+    <dt>Resource</dt><dd>Read-only content with a URI that a host can load.</dd>
+    <dt>Prompt</dt><dd>A reusable instruction template offered by a server.</dd>
+    <dt>Context window</dt><dd>The text a model can see at once: conversation, tool descriptions, tool results.</dd>
+    <dt>JSON-RPC 2.0</dt><dd>The message format of MCP.</dd>
+    <dt>Streamable HTTP</dt><dd>The remote transport: HTTP POST to one endpoint.</dd>
+    <dt>MRTR</dt><dd>Multi round-trip request: the server returns <code>input_required</code> and the client retries with answers.</dd>
+    <dt>Extension</dt><dd>An optional, separately versioned addition to the protocol.</dd>
+    <dt>Prompt injection</dt><dd>Text that tries to make a model follow an attacker's instructions instead of the user's.</dd>
+  </dl>
+</section>
+<div class="pager"><a href="index.html"><div class="k">Previous</div>Start here</a><a class="nx" href="security-and-identity.html"><div class="k">Next</div>2 · Security and identity</a></div><footer>Apply MCP Library · prepared for the Apply API team · facts checked against the MCP specification 2026-07-28 and vendor documentation in October 2026.</footer></main></div>
+</body>
+</html>
